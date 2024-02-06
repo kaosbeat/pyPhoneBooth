@@ -17,7 +17,7 @@ RPi + audio codec
 
 
 # software
-
+```
 button off hook
   |
   v
@@ -28,4 +28,4 @@ record audio --> convert to correct samplerate
   |
   v 
 send to STT service (over IP)
-  
+```
