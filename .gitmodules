@@ -1,0 +1,3 @@
+[submodule "codec_zero"]
+	path = codec_zero
+	url = https://github.com/raspberrypi/Pi-Codec
