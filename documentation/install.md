@@ -4,6 +4,6 @@
 2. once booted, disable the default rpi audio to have the codeczero as the new default:
 
 ```bash
-sudo chmod +x comment_audio.sh
-sudo ./comment_audio.sh
+sudo chmod +x audio.sh
+sudo ./audio.sh
 ```
