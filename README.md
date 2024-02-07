@@ -17,24 +17,12 @@ RPi + audio codec
 
 
 # software
-<<<<<<< HEAD
+# software
 
 ## STT models
 
-[huggingface overview](https://huggingface.co/tasks/automatic-speech-recognition)
+[huggingface overview](https://huggingface.co/tasks/automatic-speech-recognition)  
+
+[RPi4 realtime STT](https://www.youtube.com/watch?v=caaKhWcfcCY)  
 
 [RPi4 realtime STT](https://www.youtube.com/watch?v=caaKhWcfcCY)
-=======
-```
-button off hook
-  |
-  v
-play instruction message
-  |
-  v
-record audio --> convert to correct samplerate
-  |
-  v 
-send to STT service (over IP)
-```
->>>>>>> 0fc3f8ef2dfc368f2240a73d3e08873f61fd491b
