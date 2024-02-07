@@ -35,3 +35,11 @@ record audio --> convert to correct samplerate
   v 
 send to STT service (over IP)
 ```
+
+# microphone input
+
+When using electret microphone, I'm doubting if we need to have some gain on the electret side.
+
+Audio comes in via MIC2_N, when using electret. MIC2_P when using onboard MEMS.
+
+there's a lot of static when using electret.
