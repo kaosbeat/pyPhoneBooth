@@ -17,7 +17,6 @@ RPi + audio codec
 
 
 # software
-# software
 
 ## STT models
 
@@ -25,4 +24,5 @@ RPi + audio codec
 
 [RPi4 realtime STT](https://www.youtube.com/watch?v=caaKhWcfcCY)  
 
-[RPi4 realtime STT](https://www.youtube.com/watch?v=caaKhWcfcCY)
+## Whisper SOTA
+
