@@ -17,6 +17,12 @@ RPi + audio codec
 
 
 # software
+
+## STT models
+
+[huggingface overview](https://huggingface.co/tasks/automatic-speech-recognition)
+
+[RPi4 realtime STT](https://www.youtube.com/watch?v=caaKhWcfcCY)
 ```
 button off hook
   |
