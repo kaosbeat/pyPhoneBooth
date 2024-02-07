@@ -2,100 +2,90 @@ import RPi.GPIO as GPIO
 import time
 import pyaudio
 import wave
+import threading
 
+class AudioRecorder:
+    def __init__(self):
+        # Define GPIO pins
+        self.GPIO_BUTTON = 27
+        self.GPIO_RED_LED = 24
+        self.GPIO_GREEN_LED = 23
 
-# Define GPIO pins
-GPIO_BUTTON = 27
-GPIO_RED_LED = 24
-GPIO_GREEN_LED = 23
+        # Set up GPIO
+        GPIO.setmode(GPIO.BCM)
+        GPIO.setup(self.GPIO_BUTTON, GPIO.IN, pull_up_down=GPIO.PUD_UP)
+        GPIO.setup(self.GPIO_RED_LED, GPIO.OUT)
+        GPIO.setup(self.GPIO_GREEN_LED, GPIO.OUT)
 
-# Set up GPIO
-GPIO.setmode(GPIO.BCM)
-GPIO.setup(GPIO_BUTTON, GPIO.IN, pull_up_down=GPIO.PUD_UP)
-GPIO.setup(GPIO_RED_LED, GPIO.OUT)
-GPIO.setup(GPIO_GREEN_LED, GPIO.OUT)
+        # Audio parameters
+        self.FORMAT = pyaudio.paInt16
+        self.CHANNELS = 1
+        self.RATE = 44100
+        self.CHUNK = 1024
 
-# Audio parameters
-FORMAT = pyaudio.paInt16
-CHANNELS = 1
-RATE = 44100
-CHUNK = 1024
-RECORD_SECONDS = 5
-WAVE_OUTPUT_FILENAME = "output.wav"
+        # Audio stream
+        self.audio = pyaudio.PyAudio()
+        self.stream = self.audio.open(format=self.FORMAT,
+                                      channels=self.CHANNELS,
+                                      rate=self.RATE,
+                                      input=True,
+                                      frames_per_buffer=self.CHUNK)
 
-# Define callback function for button press
-def button_callback(channel):
-    print("Button pressed")
-    GPIO.output(GPIO_RED_LED, GPIO.HIGH)
-    record_audio()
-    GPIO.output(GPIO_RED_LED, GPIO.LOW)
-    GPIO.output(GPIO_GREEN_LED, GPIO.HIGH)
-    play_audio()
+        # Set up button event detection
+        GPIO.add_event_detect(self.GPIO_BUTTON, GPIO.BOTH, callback=self.adapt_recording, bouncetime=300)
 
-# Set up button event detection
-GPIO.add_event_detect(GPIO_BUTTON, GPIO.FALLING, callback=button_callback, bouncetime=300)
+    def adapt_recording(self, channel):
+        if GPIO.input(self.GPIO_BUTTON) == GPIO.HIGH:
+            self.start_recording()
+        else:
+            self.stop_recording()
 
-# Record audio function
-def record_audio():
-    audio = pyaudio.PyAudio()
+    def start_recording(self):
+        self.recording = True
+        print("Recording started")
+        GPIO.output(self.GPIO_RED_LED, GPIO.HIGH)
+        # Start recording in a separate thread
+        threading.Thread(target=self.record_audio).start()
 
-    stream = audio.open(format=FORMAT,
-                        channels=CHANNELS,
-                        rate=RATE,
-                        input=True,
-                        frames_per_buffer=CHUNK)
+    def stop_recording(self):
+        self.recording = False
+        print("Recording stopped")
+        GPIO.output(self.GPIO_RED_LED, GPIO.LOW)
+        GPIO.output(self.GPIO_GREEN_LED, GPIO.HIGH)
 
-    print("Recording...")
+    def record_audio(self):
+        # Generate filename with timestamp
+        timestamp = time.strftime("%Y%m%d-%H%M%S")
+        file_name = f"output_{timestamp}.wav"
 
-    frames = []
+        frames = []
 
-    for i in range(0, int(RATE / CHUNK * RECORD_SECONDS)):
-        data = stream.read(CHUNK)
-        frames.append(data)
+        while self.recording:
+            data = self.stream.read(self.CHUNK)
+            frames.append(data)
 
-    print("Finished recording")
+        print("Finished recording")
 
-    stream.stop_stream()
-    stream.close()
-    audio.terminate()
+        wf = wave.open(file_name, 'wb')
+        wf.setnchannels(self.CHANNELS)
+        wf.setsampwidth(self.audio.get_sample_size(self.FORMAT))
+        wf.setframerate(self.RATE)
+        wf.writeframes(b''.join(frames))
+        wf.close()
 
-    wf = wave.open(WAVE_OUTPUT_FILENAME, 'wb')
-    wf.setnchannels(CHANNELS)
-    wf.setsampwidth(audio.get_sample_size(FORMAT))
-    wf.setframerate(RATE)
-    wf.writeframes(b''.join(frames))
-    wf.close()
+    def cleanup(self):
+        GPIO.cleanup()
+        self.stream.stop_stream()
+        self.stream.close()
+        self.audio.terminate()
 
-# Playback audio function
-def play_audio():
-    wf = wave.open(WAVE_OUTPUT_FILENAME, 'rb')
+if __name__ == "__main__":
+    audio_recorder = AudioRecorder()
+    
+    try:
+        print("Waiting for button press...")
+        while True:
+            time.sleep(0.1)
 
-    audio = pyaudio.PyAudio()
-
-    stream = audio.open(format=audio.get_format_from_width(wf.getsampwidth()),
-                        channels=wf.getnchannels(),
-                        rate=wf.getframerate(),
-                        output=True)
-
-    print("Playing audio...")
-
-    data = wf.readframes(CHUNK)
-
-    while data:
-        stream.write(data)
-        data = wf.readframes(CHUNK)
-
-    print("Finished playing audio")
-
-    stream.stop_stream()
-    stream.close()
-    audio.terminate()
-
-
-try:
-    print("Waiting for button press...")
-    while True:
-        time.sleep(0.1)
-
-except KeyboardInterrupt:
-    GPIO.cleanup()
+    except KeyboardInterrupt:
+        audio_recorder.cleanup()

@@ -20,7 +20,11 @@ RPi + audio codec
 
 ## STT models
 
-[huggingface overview](https://huggingface.co/tasks/automatic-speech-recognition)
+[huggingface overview](https://huggingface.co/tasks/automatic-speech-recognition)  
+
+[RPi4 realtime STT](https://www.youtube.com/watch?v=caaKhWcfcCY)  
+
+## Whisper SOTA
 
 [RPi4 realtime STT](https://www.youtube.com/watch?v=caaKhWcfcCY)
 ```
