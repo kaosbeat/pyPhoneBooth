@@ -1,3 +1,4 @@
 sttserver/whisper.cpp/
 env
 *.wav
+peaks/
