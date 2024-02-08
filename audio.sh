@@ -2,7 +2,7 @@
 
 # adapt boot config so that default audio is disabled
 # Define the file path
-file="/boot/config.txt"
+file="/boot/firmware/config.txt"
 
 # Check if the file exists
 if [ -f "$file" ]; then
