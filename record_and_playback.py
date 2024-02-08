@@ -34,6 +34,9 @@ class AudioRecorder:
         # Set up button event detection
         GPIO.add_event_detect(self.GPIO_BUTTON, GPIO.BOTH, callback=self.adapt_recording, bouncetime=300)
 
+        #recording files
+        self.latest_recording = ""
+
     def adapt_recording(self, channel):
         if GPIO.input(self.GPIO_BUTTON) == GPIO.HIGH:
             self.start_recording()
@@ -72,6 +75,7 @@ class AudioRecorder:
         wf.setframerate(self.RATE)
         wf.writeframes(b''.join(frames))
         wf.close()
+        self.latest_recording = file_name
 
     def cleanup(self):
         GPIO.cleanup()
