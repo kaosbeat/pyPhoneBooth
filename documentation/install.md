@@ -8,7 +8,7 @@
 sudo chmod +x audio.sh
 sudo ./audio.sh
 ```
-
+sudo apt-get install portaudio19-dev python-pyaudio python3-pyaudio # needed for py-audio
 
 ## git install
 
@@ -31,3 +31,11 @@ git pull
 ```
 ### add deploy key
 https://docs.github.com/en/authentication/connecting-to-github-with-ssh/generating-a-new-ssh-key-and-adding-it-to-the-ssh-agent#generating-a-new-ssh-key
+
+
+
+## pyenv install
+
+```curl https://pyenv.run | bash```
+
+follw instructions
