@@ -46,4 +46,5 @@ When using electret microphone, I'm doubting if we need to have some gain on the
 
 Audio comes in via MIC2_N, when using electret. MIC2_P when using onboard MEMS.
 
-there's a lot of static when using electret.
+You need to use a coax cable coming from the electret to the stereo minijack (3.5mm)
+The tip is hot, the ring is cold, sleeve loose/cold.
