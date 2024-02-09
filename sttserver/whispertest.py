@@ -3,9 +3,10 @@ import time
 import argparse
 
 def transcribe_wav(wav_file):
-		now = time.time()
 
 		model = whisper.load_model("tiny.en")#"base")
+		now = time.time()
+
 		result = model.transcribe(wav_file)
 		print(result["text"])
 		print("calculation took :", time.time() - now , "sec" )
