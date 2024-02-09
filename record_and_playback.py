@@ -48,6 +48,8 @@ class AudioRecorder:
         self.recording = True
         print("Recording started")
         GPIO.output(self.GPIO_RED_LED, GPIO.HIGH)
+        GPIO.output(self.GPIO_GREEN_LED, GPIO.LOW)
+
         # Start recording in a separate thread
         threading.Thread(target=self.record_audio).start()
 
