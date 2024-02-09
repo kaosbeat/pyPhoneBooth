@@ -2,3 +2,5 @@ sttserver/whisper.cpp/
 env
 *.wav
 peaks/
+sttserver/env/
+sttserver/.python-version
