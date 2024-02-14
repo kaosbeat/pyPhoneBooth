@@ -10,7 +10,8 @@ import wave
 import threading
 import librosa
 from detect_pi import is_raspberrypi
-
+import numpy  # Make sure NumPy is loaded before it is used in the callback
+assert numpy  # avoid "imported but unused" message (W0611)
 
 class AudioRecorder:
     def __init__(self, rpi_execution: bool = False):
@@ -45,8 +46,9 @@ class AudioRecorder:
         sd.default.samplerate = 44100
         sd.default.blocksize = 1024
         sd.default.channels = 2
-        sd.default.dtype = 'int24'
-
+        #sd.default.dtype = 'int24'
+        self.non_blocking = True
+        
         self.q = queue.Queue()
 
         # recording files
@@ -104,13 +106,25 @@ class AudioRecorder:
         file_name = os.path.join(os.getcwd(), "recordings", f"output_{timestamp}.wav")
 
         self.frames.clear()
-        with sf.SoundFile(file_name, mode='x', samplerate=44100, channels=2, subtype="PCM_24") as file:
-            with sd.InputStream(callback=self.callback):
-                print('#' * 80)
-                print('press Ctrl+C to stop the recording')
-                print('#' * 80)
-                while self.recording:
-                    file.write(self.q.get())
+        if self.non_blocking:
+            with sf.SoundFile(file_name, mode='x', samplerate=44100, channels=2, subtype="PCM_24") as file:
+                try:
+                    with sd.InputStream(callback=self.callback):
+                        print('#' * 80)
+                        print('press Ctrl+C to stop the recording')
+                        print('#' * 80)
+                        while self.recording:
+                            file.write(self.q.get())
+                except sd.PortAudioError as e:
+                    print("PA error {}".format(e))
+                    #try again, miserable portaudio library
+                    self.record_audio()
+        else:
+            duration = 10.5  # seconds
+            myrecording = sd.rec(int(duration * 44100), samplerate=44100, channels=2)
+            sd.wait()
+            sd.play(myrecording, 44100)
+
 
         self.latest_recording = file_name
 
