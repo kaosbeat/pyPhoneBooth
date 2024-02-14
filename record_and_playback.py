@@ -1,22 +1,38 @@
-import RPi.GPIO as GPIO
 import time
 import pyaudio
 import wave
 import threading
+import librosa
+from detect_pi import is_raspberrypi
 
 class AudioRecorder:
-    def __init__(self):
-        # Define GPIO pins
-        self.GPIO_BUTTON = 27
-        self.GPIO_RED_LED = 24
-        self.GPIO_GREEN_LED = 23
+    def __init__(self, rpi_execution: bool= False):
+        self.rpi = False
+        if rpi_execution:
+                print("RPI execution")
+                self.rpi = True
+                
+                # Define GPIO pins
+                self.GPIO_BUTTON = 27
+                self.GPIO_RED_LED = 24
+                self.GPIO_GREEN_LED = 23
 
-        # Set up GPIO
-        GPIO.setmode(GPIO.BCM)
-        GPIO.setup(self.GPIO_BUTTON, GPIO.IN, pull_up_down=GPIO.PUD_UP)
-        GPIO.setup(self.GPIO_RED_LED, GPIO.OUT)
-        GPIO.setup(self.GPIO_GREEN_LED, GPIO.OUT)
-
+                # Set up GPIO
+                GPIO.setmode(GPIO.BCM)
+                GPIO.setup(self.GPIO_BUTTON, GPIO.IN, pull_up_down=GPIO.PUD_UP)
+                GPIO.setup(self.GPIO_RED_LED, GPIO.OUT)
+                GPIO.setup(self.GPIO_GREEN_LED, GPIO.OUT)
+                
+                # Set up button event detection
+                GPIO.add_event_detect(self.GPIO_BUTTON, GPIO.BOTH, callback=self.adapt_recording, bouncetime=300)
+        else:
+                print("running on reg pc")
+                from pynput import keyboard
+                listener = keyboard.Listener(
+                    on_press=self.start_recording,
+                    on_release=self.stop_recording)
+                listener.start()
+                
         # Audio parameters
         self.FORMAT = pyaudio.paInt24
         self.CHANNELS = 2
@@ -32,14 +48,23 @@ class AudioRecorder:
                                       frames_per_buffer=self.CHUNK)
 #                                      input_device_index=0)
 
-        # Set up button event detection
-        GPIO.add_event_detect(self.GPIO_BUTTON, GPIO.BOTH, callback=self.adapt_recording, bouncetime=300)
-
+        
         #recording files
+        self.frames = []
+
         self.latest_recording = ""
 
+    def switch_LED(self, toGreen: bool):
+            if self.rpi:
+                    if toGreen:
+                        GPIO.output(self.GPIO_RED_LED, GPIO.HIGH)
+                        GPIO.output(self.GPIO_GREEN_LED, GPIO.LOW)
+                    else:
+                        GPIO.output(self.GPIO_RED_LED, GPIO.LOW)
+                        GPIO.output(self.GPIO_GREEN_LED, GPIO.HIGH)  
+
     def adapt_recording(self, channel):
-        if GPIO.input(self.GPIO_BUTTON) == GPIO.HIGH:
+        if GPIO.input(self.GPIO_BUTTON) == GPIO.LOW:
             self.start_recording()
         else:
             self.stop_recording()
@@ -47,8 +72,8 @@ class AudioRecorder:
     def start_recording(self):
         self.recording = True
         print("Recording started")
-        GPIO.output(self.GPIO_RED_LED, GPIO.HIGH)
-        GPIO.output(self.GPIO_GREEN_LED, GPIO.LOW)
+        
+        self.switch_LED(toGreen = True)
 
         # Start recording in a separate thread
         threading.Thread(target=self.record_audio).start()
@@ -56,28 +81,28 @@ class AudioRecorder:
     def stop_recording(self):
         self.recording = False
         print("Recording stopped")
-        GPIO.output(self.GPIO_RED_LED, GPIO.LOW)
-        GPIO.output(self.GPIO_GREEN_LED, GPIO.HIGH)
+        self.switch_LED(toGreen = False)
+
 
     def record_audio(self):
         # Generate filename with timestamp
         timestamp = time.strftime("%Y%m%d-%H%M%S")
         file_name = f"output_{timestamp}.wav"
 
-        frames = []
-
+        print(threading.active_count())
+        self.frames.clear()
         while self.recording:
             data = self.stream.read(self.CHUNK)
-#            print(data)
-            frames.append(data)
+            #print(data)
+            self.frames.append(data)
 
         print("Finished recording")
-
+        print(len(self.frames))
         wf = wave.open(file_name, 'wb')
         wf.setnchannels(self.CHANNELS)
         wf.setsampwidth(self.audio.get_sample_size(self.FORMAT))
         wf.setframerate(self.RATE)
-        wf.writeframes(b''.join(frames))
+        wf.writeframes(b''.join(self.frames))
         wf.close()
         self.latest_recording = file_name
         
@@ -91,8 +116,8 @@ class AudioRecorder:
                                  channels=wf.getnchannels(),
                                  rate=wf.getframerate(),
                                  output=True)
-
-        print("Playing audio {}".format(self.latest_recording))
+        duration = librosa.get_duration(path=self.latest_recording)
+        print("Playing audio {} for {}s".format(self.latest_recording, duration))
 
         data = wf.readframes(self.CHUNK)
 
@@ -107,7 +132,8 @@ class AudioRecorder:
 
 
     def cleanup(self):
-        GPIO.cleanup()
+        if self.rpi:
+                GPIO.cleanup()
         self.stream.stop_stream()
         self.stream.close()
         self.audio.terminate()
@@ -123,8 +149,14 @@ class AudioRecorder:
  #           print(self.audio.get_device_info_by_index(i))
 
 if __name__ == "__main__":
-    audio_recorder = AudioRecorder()
-    audio_recorder.check_devices()
+    try:
+            import RPi.GPIO as GPIO
+    except:
+            print("no rpi?")
+    
+
+    audio_recorder = AudioRecorder(is_raspberrypi())
+    #audio_recorder.check_devices()
     try:
         print("Waiting for button press...")
         while True:
