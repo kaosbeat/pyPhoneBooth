@@ -4,3 +4,4 @@ env
 peaks/
 sttserver/env/
 sttserver/.python-version
+*.pyc 
