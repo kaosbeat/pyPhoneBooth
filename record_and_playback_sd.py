@@ -91,7 +91,7 @@ class AudioRecorder:
         self.switch_led(to_green=True)
 
         # Start recording in a separate thread
-        threading.Thread(target=self.record_audio).start()
+        threading.Thread(target=self.record_audio).start()  
 
     def stop_recording(self):
         self.recording = False
