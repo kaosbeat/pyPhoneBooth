@@ -1,5 +1,11 @@
+import os
+import queue
+import sys
 import time
-import pyaudio
+
+import pynput.keyboard
+import sounddevice as sd
+import soundfile as sf
 import wave
 import threading
 import librosa
@@ -31,24 +37,17 @@ class AudioRecorder:
             print("running on reg pc")
             from pynput import keyboard
             listener = keyboard.Listener(
-                on_press=self.start_recording_key,
-                on_release=self.stop_recording_key)
+                on_press=self.alter_recording_key
+            )
             listener.start()
 
         # Audio parameters
-        self.FORMAT = pyaudio.paInt24
-        self.CHANNELS = 2
-        self.RATE = 44100
-        self.CHUNK = 1024
+        sd.default.samplerate = 44100
+        sd.default.blocksize = 1024
+        sd.default.channels = 2
+        sd.default.dtype = 'int24'
 
-        # Audio stream
-        self.audio = pyaudio.PyAudio()
-        self.stream = self.audio.open(format=self.FORMAT,
-                                      channels=self.CHANNELS,
-                                      rate=self.RATE,
-                                      input=True,
-                                      frames_per_buffer=self.CHUNK)
-        #                                      input_device_index=0)
+        self.q = queue.Queue()
 
         # recording files
         self.frames = []
@@ -70,13 +69,20 @@ class AudioRecorder:
         else:
             self.stop_recording()
 
-    def start_recording_key(self, key):
-        if key.char == 'r':
-            self.start_recording()
+    def callback(self, indata, frames, time, status):
+        """This is called (from a separate thread) for each audio block."""
+        if status:
+            print(status, file=sys.stderr)
+        self.q.put(indata.copy())
 
-    def stop_recording_key(self, key):
-        if key.char == 'r':
-            self.stop_recording()
+    def alter_recording_key(self, key: pynput.keyboard.KeyCode):
+        if type(key) == pynput.keyboard.KeyCode:
+            if key.char == 'r':
+                print("recording")
+                self.start_recording()
+            if key.char == 's':
+                print("stopping")
+                self.stop_recording()
 
     def start_recording(self):
         self.recording = True
@@ -95,62 +101,56 @@ class AudioRecorder:
     def record_audio(self):
         # Generate filename with timestamp
         timestamp = time.strftime("%Y%m%d-%H%M%S")
-        file_name = f"output_{timestamp}.wav"
+        file_name = os.path.join(os.getcwd(), "recordings", f"output_{timestamp}.wav")
 
-        print(threading.active_count())
         self.frames.clear()
-        while self.recording:
-            data = self.stream.read(self.CHUNK)
-            # print(data)
-            self.frames.append(data)
+        with sf.SoundFile(file_name, mode='x', samplerate=44100, channels=2, subtype="PCM_24") as file:
+            with sd.InputStream(callback=self.callback):
+                print('#' * 80)
+                print('press Ctrl+C to stop the recording')
+                print('#' * 80)
+                while self.recording:
+                    file.write(self.q.get())
 
-        print("Finished recording")
-        print(len(self.frames))
-        wf = wave.open(file_name, 'wb')
-        wf.setnchannels(self.CHANNELS)
-        wf.setsampwidth(self.audio.get_sample_size(self.FORMAT))
-        wf.setframerate(self.RATE)
-        wf.writeframes(b''.join(self.frames))
-        wf.close()
         self.latest_recording = file_name
 
         # play audio after recording
-        self.play_audio()
+        # self.play_audio()
 
-    def play_audio(self):
-        wf = wave.open(self.latest_recording, 'rb')
-
-        stream = self.audio.open(format=self.audio.get_format_from_width(wf.getsampwidth()),
-                                 channels=wf.getnchannels(),
-                                 rate=wf.getframerate(),
-                                 output=True)
-        duration = librosa.get_duration(path=self.latest_recording)
-        print("Playing audio {} for {}s".format(self.latest_recording, duration))
-
-        data = wf.readframes(self.CHUNK)
-
-        while data:
-            stream.write(data)
-            data = wf.readframes(self.CHUNK)
-
-        print("Finished playing audio")
-
-        stream.stop_stream()
-        stream.close()
+    # def play_audio(self):
+    #     wf = wave.open(self.latest_recording, 'rb')
+    #
+    #     stream = self.audio.open(format=self.audio.get_format_from_width(wf.getsampwidth()),
+    #                              channels=wf.getnchannels(),
+    #                              rate=wf.getframerate(),
+    #                              output=True)
+    #     duration = librosa.get_duration(path=self.latest_recording)
+    #     print("Playing audio {} for {}s".format(self.latest_recording, duration))
+    #
+    #     data = wf.readframes(self.CHUNK)
+    #
+    #     while data:
+    #         stream.write(data)
+    #         data = wf.readframes(self.CHUNK)
+    #
+    #     print("Finished playing audio")
+    #
+    #     stream.stop_stream()
+    #     stream.close()
 
     def cleanup(self):
         if self.rpi:
             GPIO.cleanup()
-        self.stream.stop_stream()
-        self.stream.close()
-        self.audio.terminate()
+        # self.stream.stop_stream()
+        # self.stream.close()
+        # self.audio.terminate()
 
-    def check_devices(self):
-        info = self.audio.get_host_api_info_by_index(0)
-        numdevices = info.get('deviceCount')
-        for i in range(0, numdevices):
-            if (self.audio.get_device_info_by_host_api_device_index(0, i).get('maxInputChannels')) > 0:
-                print("Input Device id ", i, " - ", self.audio.get_device_info_by_host_api_device_index(0, i))
+    # def check_devices(self):
+    #     info = self.audio.get_host_api_info_by_index(0)
+    #     numdevices = info.get('deviceCount')
+    #     for i in range(0, numdevices):
+    #         if (self.audio.get_device_info_by_host_api_device_index(0, i).get('maxInputChannels')) > 0:
+    #             print("Input Device id ", i, " - ", self.audio.get_device_info_by_host_api_device_index(0, i))
 
 
 #        for i in range(self.audio.get_device_count()):
