@@ -82,7 +82,8 @@ class AudioRecorder:
             print(status, file=sys.stderr)
         self.q.put(indata.copy())
 
-    def alter_recording_key(self, key: pynput.keyboard.KeyCode):
+    def alter_recording_key(self, key):
+        import pynput
         if type(key) == pynput.keyboard.KeyCode:
             if key.char == 'r':
                 print("recording")
