@@ -89,24 +89,25 @@ class AudioRecorder:
         file_name = os.path.join(os.getcwd(), "recordings", f"output_{timestamp}.wav")
 
         self.frames.clear()
-        if self.non_blocking:
-            with sf.SoundFile(file_name, mode='x', samplerate=44100, channels=2, subtype="PCM_24") as file:
-                try:
-                    with sd.InputStream(callback=self.callback):
-                        print('#' * 80)
-                        print('press Ctrl+C to stop the recording')
-                        print('#' * 80)
-                        while self.recording:
-                            file.write(self.q.get())
-                except sd.PortAudioError as e:
-                    print("PA error {}".format(e))
-                    # try again, miserable portaudio library
-                    self.record_audio()
-        else:
-            duration = 5  # seconds
-            myrecording = sd.rec(int(duration * 44100), samplerate=44100, channels=2)
-            sd.wait()
-            sd.play(myrecording, 44100)
+        try:
+            if self.non_blocking:
+                with sf.SoundFile(file_name, mode='x', samplerate=44100, channels=2, subtype="PCM_24") as file:
+
+                        with sd.InputStream(callback=self.callback):
+                            print('#' * 80)
+                            print('press Ctrl+C to stop the recording')
+                            print('#' * 80)
+                            while self.recording:
+                                file.write(self.q.get())
+            else:
+                duration = 5  # seconds
+                my_recording = sd.rec(int(duration * 44100), samplerate=44100, channels=2)
+                sd.wait()
+                sd.play(my_recording, 44100)
+        except sd.PortAudioError as e:
+            print("PA error {}".format(e))
+            # try again, miserable portaudio library
+            self.record_audio()
 
         self.latest_recording = file_name
 
@@ -114,12 +115,9 @@ class AudioRecorder:
         self.play_audio()
 
     def play_audio(self):
-        print("todo")
-
-    # def cleanup(self):
-    # if self.rpi:
-    # GPIO.cleanup()
-
+        data, fs = sf.read(self.latest_recording)
+        sd.play(data, fs)
+        sd.wait()
 
 if __name__ == "__main__":
     try:
