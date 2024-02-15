@@ -23,20 +23,6 @@ class AudioRecorder:
             print("RPI execution")
             self.rpi = True
             self.gpio = gpio_class(callback_function=self.adapt_recording)
-
-            # # Define GPIO pins
-            # self.GPIO_BUTTON = 27
-            # self.GPIO_RED_LED = 24
-            # self.GPIO_GREEN_LED = 23
-
-            # # Set up GPIO
-            # GPIO.setmode(GPIO.BCM)
-            # GPIO.setup(self.GPIO_BUTTON, GPIO.IN, pull_up_down=GPIO.PUD_UP)
-            # GPIO.setup(self.GPIO_RED_LED, GPIO.OUT)
-            # GPIO.setup(self.GPIO_GREEN_LED, GPIO.OUT)
-
-            # # Set up button event detection
-            # GPIO.add_event_detect(self.GPIO_BUTTON, GPIO.BOTH, callback=self.adapt_recording, bouncetime=300)
         else:
             print("running on reg pc")
             from pynput import keyboard
@@ -50,7 +36,7 @@ class AudioRecorder:
         sd.default.blocksize = 1024
         sd.default.channels = 2
         # sd.default.dtype = 'int24'
-        self.non_blocking = False
+        self.non_blocking = True
 
         self.q = queue.Queue()
 
@@ -58,15 +44,6 @@ class AudioRecorder:
         self.frames = []
 
         self.latest_recording = ""
-
-    # def switch_led(self, to_green: bool):
-    # if self.rpi:
-    # if to_green:
-    # GPIO.output(self.GPIO_RED_LED, GPIO.HIGH)
-    # GPIO.output(self.GPIO_GREEN_LED, GPIO.LOW)
-    # else:
-    # GPIO.output(self.GPIO_RED_LED, GPIO.LOW)
-    # GPIO.output(self.GPIO_GREEN_LED, GPIO.HIGH)
 
     def adapt_recording(self, channel):
         time.sleep(0.1)
@@ -77,7 +54,7 @@ class AudioRecorder:
 
     def callback(self, indata, frames, time, status):
         """This is called (from a separate thread) for each audio block."""
-        print(indata)
+#        print(indata)
         if status:
             print(status, file=sys.stderr)
         self.q.put(indata.copy())
