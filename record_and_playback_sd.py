@@ -3,7 +3,6 @@ import queue
 import sys
 import time
 
-import pynput.keyboard
 import sounddevice as sd
 import soundfile as sf
 import wave
