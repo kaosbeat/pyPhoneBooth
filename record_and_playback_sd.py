@@ -115,10 +115,14 @@ class AudioRecorder:
         self.play_audio()
 
     def play_audio(self):
-        data, fs = sf.read(self.latest_recording)
-        sd.play(data, fs)
-        sd.wait()
-
+        try:
+            data, fs = sf.read(self.latest_recording)
+            sd.play(data, fs)
+            sd.wait()
+        except sd.PortAudioError as e:
+            print("PA error {}".format(e))
+            # try again, miserable portaudio library
+            self.play_audio()
 if __name__ == "__main__":
     try:
         import RPi.GPIO as GPIO
