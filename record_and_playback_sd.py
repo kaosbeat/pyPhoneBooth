@@ -54,7 +54,7 @@ class AudioRecorder:
 
     def callback(self, indata, frames, time, status):
         """This is called (from a separate thread) for each audio block."""
-#        print(indata)
+        #        print(indata)
         if status:
             print(status, file=sys.stderr)
         self.q.put(indata.copy())
@@ -72,9 +72,6 @@ class AudioRecorder:
     def start_recording(self):
         self.recording = True
         print("Recording started")
-
-        self.gpio.switch_led(to_green=True)
-
         # Start recording in a separate thread
         threading.Thread(target=self.record_audio).start()
 
@@ -92,13 +89,14 @@ class AudioRecorder:
         try:
             if self.non_blocking:
                 with sf.SoundFile(file_name, mode='x', samplerate=44100, channels=2, subtype="PCM_24") as file:
-
-                        with sd.InputStream(callback=self.callback):
-                            print('#' * 80)
-                            print('press Ctrl+C to stop the recording')
-                            print('#' * 80)
-                            while self.recording:
-                                file.write(self.q.get())
+                    with sd.InputStream(callback=self.callback):
+                        if self.rpi:
+                            self.gpio.switch_led(to_green=True)
+                        print('#' * 80)
+                        print('press Ctrl+C to stop the recording')
+                        print('#' * 80)
+                        while self.recording:
+                            file.write(self.q.get())
             else:
                 duration = 5  # seconds
                 my_recording = sd.rec(int(duration * 44100), samplerate=44100, channels=2)
@@ -123,6 +121,8 @@ class AudioRecorder:
             print("PA error {}".format(e))
             # try again, miserable portaudio library
             self.play_audio()
+
+
 if __name__ == "__main__":
     try:
         import RPi.GPIO as GPIO
