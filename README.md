@@ -40,7 +40,9 @@ record audio --> convert to correct samplerate
 send to STT service (over IP)
 ```
 
-# microphone input
+# physicall connections
+
+## microphone input
 
 When using electret microphone, I'm doubting if we need to have some gain on the electret side.
 
@@ -48,3 +50,13 @@ Audio comes in via MIC2_N, when using electret. MIC2_P when using onboard MEMS.
 
 You need to use a coax cable coming from the electret to the stereo minijack (3.5mm)
 The tip is hot, the ring is cold, sleeve loose/cold.
+
+## button
+
+When wiring the phone button to GPIO 27 (same as button on IQAudio), I get lot's of incorrect readings.
+
+I've changed the phone button from GPIO 17 to GND, with internal pullup. This way, when the phone is **on** the hook, we get a positive reading on the GPIO (no shortcut to GND). When the phone is **off** the hook, we get a shortcut to GND and thus a 0 reading on the GPIO.
+
+Even with this adaption, I get some bad readings. 
+
+**TODO** photo from internal connections of the phone & the IQAUDIO board **TODO**
