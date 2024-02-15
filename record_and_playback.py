@@ -6,6 +6,7 @@ import librosa
 from detect_pi import is_raspberrypi
 import os
 
+
 class AudioRecorder:
     def __init__(self, rpi_execution: bool = False):
         self.recording = None
@@ -14,8 +15,8 @@ class AudioRecorder:
             from gpio_class import gpio_class
             print("RPI execution")
             self.rpi = True
-            self.gpio = gpio_class(callback_function=self.adapt_recording)          
-            print("GPIO initialised")  
+            self.gpio = gpio_class(callback_function=self.adapt_recording)
+            print("GPIO initialised")
         else:
             print("running on reg pc")
             from pynput import keyboard
@@ -43,10 +44,10 @@ class AudioRecorder:
         #                                      input_device_index=0)
 
         print("audio recorder initialized")
-        
+
     def adapt_recording(self, channel):
         print("gpio callback triggered")
-        time.sleep(0.1) #time delay for false readings
+        time.sleep(0.1)  # time delay for false readings
         if GPIO.input(channel) == GPIO.LOW:
             self.start_recording()
         else:
@@ -77,10 +78,10 @@ class AudioRecorder:
     def record_audio(self):
         # Generate filename with timestamp
         timestamp = time.strftime("%Y%m%d-%H%M%S")
-        file_name = os.path.join(os.getcwd(),"recordings",f"output_{timestamp}.wav")
+        file_name = os.path.join(os.getcwd(), "recordings", f"output_{timestamp}.wav")
 
         print(threading.active_count())
-        
+
         self.frames.clear()
         print("ready to capture data")
         while self.recording:
@@ -129,8 +130,8 @@ class AudioRecorder:
 
     def check_devices(self):
         info = self.audio.get_host_api_info_by_index(0)
-        numdevices = info.get('deviceCount')
-        for i in range(0, numdevices):
+        num_devices = info.get('deviceCount')
+        for i in range(0, num_devices):
             if (self.audio.get_device_info_by_host_api_device_index(0, i).get('maxInputChannels')) > 0:
                 print("Input Device id ", i, " - ", self.audio.get_device_info_by_host_api_device_index(0, i))
 

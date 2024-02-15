@@ -11,8 +11,10 @@ import threading
 import librosa
 from detect_pi import is_raspberrypi
 import numpy  # Make sure NumPy is loaded before it is used in the callback
+
 assert numpy  # avoid "imported but unused" message (W0611)
 from gpio_class import gpio_class
+
 
 class AudioRecorder:
     def __init__(self, rpi_execution: bool = False):
@@ -21,7 +23,7 @@ class AudioRecorder:
         if rpi_execution:
             print("RPI execution")
             self.rpi = True
-            self.gpio = gpio_class(callback_function=self.adapt_recording)          
+            self.gpio = gpio_class(callback_function=self.adapt_recording)
 
             # # Define GPIO pins
             # self.GPIO_BUTTON = 27
@@ -48,9 +50,9 @@ class AudioRecorder:
         sd.default.samplerate = 44100
         sd.default.blocksize = 1024
         sd.default.channels = 2
-        #sd.default.dtype = 'int24'
+        # sd.default.dtype = 'int24'
         self.non_blocking = False
-        
+
         self.q = queue.Queue()
 
         # recording files
@@ -59,13 +61,13 @@ class AudioRecorder:
         self.latest_recording = ""
 
     # def switch_led(self, to_green: bool):
-        # if self.rpi:
-            # if to_green:
-                # GPIO.output(self.GPIO_RED_LED, GPIO.HIGH)
-                # GPIO.output(self.GPIO_GREEN_LED, GPIO.LOW)
-            # else:
-                # GPIO.output(self.GPIO_RED_LED, GPIO.LOW)
-                # GPIO.output(self.GPIO_GREEN_LED, GPIO.HIGH)
+    # if self.rpi:
+    # if to_green:
+    # GPIO.output(self.GPIO_RED_LED, GPIO.HIGH)
+    # GPIO.output(self.GPIO_GREEN_LED, GPIO.LOW)
+    # else:
+    # GPIO.output(self.GPIO_RED_LED, GPIO.LOW)
+    # GPIO.output(self.GPIO_GREEN_LED, GPIO.HIGH)
 
     def adapt_recording(self, channel):
         time.sleep(0.1)
@@ -97,7 +99,7 @@ class AudioRecorder:
         self.gpio.switch_led(to_green=True)
 
         # Start recording in a separate thread
-        threading.Thread(target=self.record_audio).start()  
+        threading.Thread(target=self.record_audio).start()
 
     def stop_recording(self):
         self.recording = False
@@ -121,14 +123,13 @@ class AudioRecorder:
                             file.write(self.q.get())
                 except sd.PortAudioError as e:
                     print("PA error {}".format(e))
-                    #try again, miserable portaudio library
+                    # try again, miserable portaudio library
                     self.record_audio()
         else:
             duration = 5  # seconds
             myrecording = sd.rec(int(duration * 44100), samplerate=44100, channels=2)
             sd.wait()
             sd.play(myrecording, 44100)
-
 
         self.latest_recording = file_name
 
@@ -138,10 +139,9 @@ class AudioRecorder:
     def play_audio(self):
         print("todo")
 
-
     # def cleanup(self):
-        # if self.rpi:
-            # GPIO.cleanup()
+    # if self.rpi:
+    # GPIO.cleanup()
 
 
 if __name__ == "__main__":
@@ -155,4 +155,3 @@ if __name__ == "__main__":
     print("Waiting for button press...")
     while True:
         time.sleep(0.1)
-
