@@ -129,46 +129,16 @@ class AudioRecorder:
         self.latest_recording = file_name
 
         # play audio after recording
-        # self.play_audio()
+        self.play_audio()
 
-    # def play_audio(self):
-    #     wf = wave.open(self.latest_recording, 'rb')
-    #
-    #     stream = self.audio.open(format=self.audio.get_format_from_width(wf.getsampwidth()),
-    #                              channels=wf.getnchannels(),
-    #                              rate=wf.getframerate(),
-    #                              output=True)
-    #     duration = librosa.get_duration(path=self.latest_recording)
-    #     print("Playing audio {} for {}s".format(self.latest_recording, duration))
-    #
-    #     data = wf.readframes(self.CHUNK)
-    #
-    #     while data:
-    #         stream.write(data)
-    #         data = wf.readframes(self.CHUNK)
-    #
-    #     print("Finished playing audio")
-    #
-    #     stream.stop_stream()
-    #     stream.close()
+    def play_audio(self):
+        print("todo"
+
 
     def cleanup(self):
         if self.rpi:
             GPIO.cleanup()
-        # self.stream.stop_stream()
-        # self.stream.close()
-        # self.audio.terminate()
 
-    # def check_devices(self):
-    #     info = self.audio.get_host_api_info_by_index(0)
-    #     numdevices = info.get('deviceCount')
-    #     for i in range(0, numdevices):
-    #         if (self.audio.get_device_info_by_host_api_device_index(0, i).get('maxInputChannels')) > 0:
-    #             print("Input Device id ", i, " - ", self.audio.get_device_info_by_host_api_device_index(0, i))
-
-
-#        for i in range(self.audio.get_device_count()):
-#           print(self.audio.get_device_info_by_index(i))
 
 if __name__ == "__main__":
     try:
