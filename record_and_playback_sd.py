@@ -37,7 +37,7 @@ class AudioRecorder:
         sd.default.channels = 2
         # sd.default.dtype = 'int24'
         self.non_blocking = True
-
+        sd.default.device= 1
         self.q = queue.Queue()
 
         # recording files
