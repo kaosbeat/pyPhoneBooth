@@ -18,6 +18,8 @@ def notify_gpio(channel):
 
 class gpio_class:
     def __init__(self, callback_function=None):
+
+
         self.GPIO_BUTTON_1 = 17
         self.GPIO_BUTTON_2 = 27
         self.GPIO_RED_LED = 24
