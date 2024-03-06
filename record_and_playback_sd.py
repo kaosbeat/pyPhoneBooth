@@ -21,15 +21,18 @@ class AudioRecorder:
         if rpi_execution:
             print("RPI execution")
             rpi_version = raspberrypi_version()
-            if(rpi_version==4):
-                from gpio_class_rpigpio import gpio_class
-            elif(rpi_version==5):
-                from gpio_class_gpiozero import gpio_class
-            else:
-                print("check which gpio class to use for this rpi {}".format(rpi_version))
-                from gpio_class_gpiozero import gpio_class
+            match rpi_version:
+                case 4:
+                    from gpio_class_rpigpio import gpio_class
+                    self.gpio = gpio_class(callback_function_pressed=self.adapt_recording)
+                case 5:
+                    from gpio_class_gpiozero import gpio_class
+                    self.gpio = gpio_class(callback_function_pressed=self.start_recording, callback_function_released=self.stop_recording)
+                case _:
+                    print("check which gpio class to use for this rpi {}".format(rpi_version))
+                    from gpio_class_gpiozero import gpio_class
+                    self.gpio = gpio_class(callback_function_pressed=self.start_recording, callback_function_released=self.stop_recording)
             self.rpi = True
-            self.gpio = gpio_class(callback_function=self.adapt_recording)
         else:
             print("running on reg pc")
             from pynput import keyboard

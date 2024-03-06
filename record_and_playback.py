@@ -3,7 +3,7 @@ import pyaudio
 import wave
 import threading
 import librosa
-from detect_pi import is_raspberrypi
+from detect_pi import is_raspberrypi, raspberrypi_version
 import os
 
 
@@ -12,10 +12,20 @@ class AudioRecorder:
         self.recording = None
         self.rpi = False
         if rpi_execution:
-            from gpio_class import gpio_class
             print("RPI execution")
+            rpi_version = raspberrypi_version()
+            match rpi_version:
+                case 4:
+                    from gpio_class_rpigpio import gpio_class
+                    self.gpio = gpio_class(callback_function_pressed=self.adapt_recording)
+                case 5:
+                    from gpio_class_gpiozero import gpio_class
+                    self.gpio = gpio_class(callback_function_pressed=self.start_recording, callback_function_released=self.stop_recording)
+                case _:
+                    print("check which gpio class to use for this rpi {}".format(rpi_version))
+                    from gpio_class_gpiozero import gpio_class
+                    self.gpio = gpio_class(callback_function_pressed=self.start_recording, callback_function_released=self.stop_recording)
             self.rpi = True
-            self.gpio = gpio_class(callback_function=self.adapt_recording)
             print("GPIO initialised")
         else:
             print("running on reg pc")

@@ -17,7 +17,7 @@ def notify_gpio(channel):
 
 
 class gpio_class:
-    def __init__(self, callback_function=None):
+    def __init__(self, callback_function=FileNotFoundError):
 
 
         self.GPIO_BUTTON_1 = 17
