@@ -1,4 +1,3 @@
-RPi.GPIO
 librosa
 pyaudio
 pynput

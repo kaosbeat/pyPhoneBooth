@@ -12,16 +12,18 @@ def is_raspberrypi():
 def raspberrypi_version():
     try:
         with io.open('/proc/device-tree/compatible', 'r') as m:
-            match m:
-                case "raspberrypi,5-model-bbrcm,bcm2712":
-                    return 5
-                case "raspberrypi,4-model-bbrcm,bcm2711":
-                    return 4
-                case "raspberrypi,model-zero-wbrcm,bcm2835":
-                    return 0
-                case _:
-                    print("not sure which rpi board you've got there mate")
-                    return _
+            x = m.read().lower()
+            if '5' in x:
+                  return 5
+            if '4' in x:
+                  return 4
+            if '3' in x:
+                  return 3
+            if 'zero' in x:
+                  return 0
+            else:
+                  print("not sure which rpi board you've got there mate")
+                  return _
     except Exception as e:
         print("exception reading rpi version: {}".format(e))
     return False
