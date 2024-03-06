@@ -26,14 +26,8 @@ def test():
 
 # Define GPIO pins
 def notify_gpio(channel):
-    first_reading = GPIO.input(channel)
-    time.sleep(0.1)
-    second_reading = GPIO.input(channel)
-    if first_reading == second_reading:
-        print("got a {} from channel {}".format(first_reading, channel))
-    else:
-        print("first got a {}, then a {} from channel {}".format(first_reading, second_reading, channel))
-
+    print("channel {} is pressed {} or released {}".format(channel, channel.is_pressed(), channel.is_released()))
+  
 
 class gpio_class:
     def __init__(self, callback_function_pressed=None, callback_function_released = None):
