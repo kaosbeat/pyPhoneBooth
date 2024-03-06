@@ -2,3 +2,5 @@ RPi.GPIO
 librosa
 pyaudio
 pynput
+sounddevice
+soundfile
