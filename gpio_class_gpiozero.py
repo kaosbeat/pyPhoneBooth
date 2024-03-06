@@ -26,7 +26,7 @@ def test():
 
 # Define GPIO pins
 def notify_gpio(channel):
-    print("channel {} is pressed {} or released {}".format(channel, channel.is_pressed(), channel.is_released()))
+    print("channel {} is pressed {}".format(channel.pin, channel.is_pressed))
   
 
 class gpio_class:
