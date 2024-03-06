@@ -8,11 +8,10 @@ import soundfile as sf
 import wave
 import threading
 import librosa
-from detect_pi import is_raspberrypi
+from detect_pi import is_raspberrypi, raspberrypi_version
 import numpy  # Make sure NumPy is loaded before it is used in the callback
 
 assert numpy  # avoid "imported but unused" message (W0611)
-from gpio_class import gpio_class
 
 
 class AudioRecorder:
@@ -21,6 +20,14 @@ class AudioRecorder:
         self.rpi = False
         if rpi_execution:
             print("RPI execution")
+            rpi_version = raspberrypi_version()
+            if(rpi_version==4):
+                from gpio_class_rpigpio import gpio_class
+            elif(rpi_version==5):
+                from gpio_class_gpiozero import gpio_class
+            else:
+                print("check which gpio class to use for this rpi {}".format(rpi_version))
+                from gpio_class_gpiozero import gpio_class
             self.rpi = True
             self.gpio = gpio_class(callback_function=self.adapt_recording)
         else:
