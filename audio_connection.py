@@ -19,7 +19,7 @@ class AudioRecorder:
     def __init__(self, rpi_execution: bool = False):
         self.recording = None
         self.rpi = False
-        self.samplerate = 16000
+        self.samplerate = 44100
         self.block_size = 1024
         self.channels = 1
         self.duration = 5

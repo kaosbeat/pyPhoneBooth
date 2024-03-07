@@ -11,13 +11,17 @@ class AudioRecorder:
     def __init__(self, rpi_execution: bool = False):
         self.recording = None
         self.rpi = False
+        self.samplerate = 44100
+        self.block_size = 1024
+        self.channels = 1
+        self.duration = 5
         if rpi_execution:
             print("RPI execution")
             rpi_version = raspberrypi_version()
             match rpi_version:
                 case 4:
                     from gpio_class_rpigpio import gpio_class
-                    self.gpio = gpio_class(callback_function_pressed=self.adapt_recording)
+                    self.gpio = gpio_class(callback_function=self.adapt_recording)
                 case 5:
                     from gpio_class_gpiozero import gpio_class
                     self.gpio = gpio_class(callback_function_pressed=self.start_recording, callback_function_released=self.stop_recording)
@@ -40,9 +44,9 @@ class AudioRecorder:
         self.latest_recording = ""
         # Audio parameters
         self.FORMAT = pyaudio.paInt24
-        self.CHANNELS = 2
-        self.RATE = 44100
-        self.CHUNK = 1024
+        self.CHANNELS = self.channels
+        self.RATE = self.samplerate
+        self.CHUNK = self.block_size
 
         # Audio stream
         self.audio = pyaudio.PyAudio()

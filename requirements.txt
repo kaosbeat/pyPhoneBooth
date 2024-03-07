@@ -3,3 +3,5 @@ pyaudio
 pynput
 sounddevice
 soundfile
+pydub
+openai-whisper
