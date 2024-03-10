@@ -36,7 +36,6 @@ name = sys.argv[1]
 server = sys.argv[2]
 options = sys.argv[3]
 
-mainserver = "ws://"+servers["main"]+":8001"
 
 engine = pyttsx4.init()
 engine.say("Hi, "+ sys.argv[1]  + "activated")
