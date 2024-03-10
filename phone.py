@@ -22,7 +22,7 @@ import numpy  # Make sure NumPy is loaded before it is used in the callback
 
 assert numpy  # avoid "imported but unused" message (W0611)
 from pydub import AudioSegment, effects
-from config import servers
+from config import mainserver
 
 
 # Define a function to speak a long sentence in the background:
