@@ -1,0 +1,1 @@
+mainserver = "ws://corekaos.local:8001"
