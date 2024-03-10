@@ -24,8 +24,9 @@ class AudioRecorder:
         self.channels = 1
         self.duration = 5
         if rpi_execution:
-            print("RPI execution")
             rpi_version = raspberrypi_version()
+            print("RPI {} execution".format(rpi_version))
+
             match rpi_version:
                 case 4:
                     from gpio_class_rpigpio import gpio_class
@@ -72,7 +73,7 @@ class AudioRecorder:
     def callback(self, indata, frames, time, status):
         """This is called (from a separate thread) for each audio block. This puts the audio in a queue so we can
         save it in the main thread"""
-        #        print(indata)
+        #print(indata)
         if status:
             print(status, file=sys.stderr)
         self.q.put(indata.copy())
@@ -124,7 +125,7 @@ class AudioRecorder:
             # normalize the audio
             raw_sound = AudioSegment.from_file(file_name, "wav")
             normalized_sound = effects.normalize(raw_sound)
-            normalized_sound.export(file_name, format="wav")
+            normalized_sound.export("{}".format(file_name), format="wav")
         except sd.PortAudioError as e:
             print("PA error {}".format(e))
             # try again, miserable portaudio library
