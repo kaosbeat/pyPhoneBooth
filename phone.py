@@ -124,11 +124,26 @@ class AudioRecorder:
         print("Recording started")
         # Start recording in a separate thread
         threading.Thread(target=self.record_audio).start()
+        status  = {
+            "type": "status",
+            "status": "hook",
+            "data" : "off",
+            "src": name
+        }
+        ws.send(json.dumps(status))
+
 
     def stop_recording(self):
         self.recording = False
         print("Recording stopped")
         self.gpio.switch_led(to_green=False)
+        status  = {
+            "type": "status",
+            "status": "hook",
+            "data" : "on",
+            "src": name
+        }
+        ws.send(json.dumps(status))
 
     def record_audio(self):
         # Generate filename with timestamp
@@ -162,7 +177,13 @@ class AudioRecorder:
             self.record_audio()
 
         self.latest_recording = file_name
-
+        status  = {
+            "type": "status",
+            "status": "recording_done",
+            "data" : file_name,
+            "src": name
+        }
+        ws.send(json.dumps(status))
 
         
 
