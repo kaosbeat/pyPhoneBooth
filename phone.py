@@ -42,8 +42,14 @@ engine.say("Hi, "+ sys.argv[1]  + "activated")
 engine.runAndWait()
 
 
-
-
+def sendStatus(ws, status, data):
+    status  = {
+        "type": "status",
+        "status": status,
+        "data" : data,
+        "src": name
+    }
+    ws.send(json.dumps(status))
 
 
 class AudioRecorder:
@@ -124,26 +130,28 @@ class AudioRecorder:
         print("Recording started")
         # Start recording in a separate thread
         threading.Thread(target=self.record_audio).start()
-        status  = {
-            "type": "status",
-            "status": "hook",
-            "data" : "off",
-            "src": name
-        }
-        ws.send(json.dumps(status))
+        # status  = {
+        #     "type": "status",
+        #     "status": "hook",
+        #     "data" : "off",
+        #     "src": name
+        # }
+        # ws.send(json.dumps(status))
+        sendStatus(ws, "hook", "off")
 
 
     def stop_recording(self):
         self.recording = False
         print("Recording stopped")
         self.gpio.switch_led(to_green=False)
-        status  = {
-            "type": "status",
-            "status": "hook",
-            "data" : "on",
-            "src": name
-        }
-        ws.send(json.dumps(status))
+        # status  = {
+        #     "type": "status",
+        #     "status": "hook",
+        #     "data" : "on",
+        #     "src": name
+        # }
+        # ws.send(json.dumps(status))
+        sendStatus(ws, "hook", "on")
 
     def record_audio(self):
         # Generate filename with timestamp
@@ -177,13 +185,8 @@ class AudioRecorder:
             self.record_audio()
 
         self.latest_recording = file_name
-        status  = {
-            "type": "status",
-            "status": "recording_done",
-            "data" : file_name,
-            "src": name
-        }
-        ws.send(json.dumps(status))
+        sendStatus(ws, "recording_done", file_name)
+
 
         
 
@@ -197,9 +200,6 @@ class AudioRecorder:
             print("PA error {}".format(e))
             # try again, miserable portaudio library
             self.play_audio(audio_file)
-
-
-
 
 
 def on_message(ws, message):
