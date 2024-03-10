@@ -200,7 +200,7 @@ class AudioRecorder:
 
 def on_message(ws, message):
     event = json.loads(message)
-    # print(event["data"]["text"])
+    print(event)
     if event["type"] == "command" and event["dest"] == name:
         # print(event["text"]) 
         if event["command"] == "say":
