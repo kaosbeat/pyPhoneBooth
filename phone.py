@@ -139,7 +139,7 @@ class AudioRecorder:
         sendStatus(ws, "hook", "off")
         print("Phone off Hook")
         engine.say("please speak your dream loud and clear after this message. Ready? 3.2.1 Go!")
-        engine.runAndwait()
+        engine.runAndWait()
         print("starting recording")
         sendStatus(ws, "recording", True)
         # Start recording in a separate thread
@@ -214,6 +214,9 @@ def on_message(ws, message):
             print("converting sdpeech to text")
             inputtext = transcribe_wav(event["data"])
             sendStatus(ws, "sttdone", inputtext)
+            engine.say(inputtext)
+            engine.runAndWait()
+            
 
 def on_error(ws, error):
     print(error)
@@ -221,6 +224,7 @@ def on_error(ws, error):
 def on_close(ws, close_status_code, close_msg):
     print("### closed ###")
     engine.say("speaker "+ name  + "disconnected ")
+    engine.runAndWait()
 
 
 def on_open(ws):
@@ -233,6 +237,7 @@ def on_open(ws):
         }
     ws.send(json.dumps(initstatus))
     engine.say("speaker: "+ name + ", connected to " + mainserver)
+    engine.runAndWait()
 
 
 if __name__ == "__main__":
