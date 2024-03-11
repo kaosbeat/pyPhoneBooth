@@ -1,0 +1,15 @@
+[Unit]
+Description=DDD Phone Unit
+ 
+[Service]
+Type=forking
+ExecStart=/usr/bin/bash --login /home/pi/DataDrivenDreams/python/pyPhonebooth/phone1.sh
+WorkingDirectory=/home/pi/DataDrivenDreams/python/pyPhonebooth/
+StandardOutput=inherit
+StandardError=inherit
+Restart=on-failure
+User=pi
+Killmode=process
+ 
+[Install]
+WantedBy=multi-user.target
