@@ -40,6 +40,7 @@ options = sys.argv[3]
 
 engine = pyttsx4.init()
 engine.say("Hi, "+ sys.argv[1]  + "activated")
+engine.setProperty('voice', "english_rp+f2")
 engine.runAndWait()
 
 
@@ -138,7 +139,7 @@ class AudioRecorder:
     def start_recording(self):
         sendStatus(ws, "hook", "off")
         print("Phone off Hook")
-        engine.say("please speak your dream loud and clear after this message. Ready? 3.2.1 Go!")
+        engine.say("please speak your dream loud and clear after this message. Ready? 3 2 1 Go!")
         engine.runAndWait()
         print("starting recording")
         sendStatus(ws, "recording", True)
@@ -150,6 +151,7 @@ class AudioRecorder:
     def stop_recording(self):
         self.recording = False
         print("Recording stopped")
+        sendStatus(ws, "recording", False)
         self.gpio.switch_led(to_green=False)
         sendStatus(ws, "hook", "on")
 
@@ -184,6 +186,7 @@ class AudioRecorder:
             # try again, miserable portaudio library
             self.record_audio()
         self.latest_recording = file_name
+        sendStatus(ws, "recording", False)
         sendStatus(ws, "recording_done", file_name)
         
 
@@ -211,9 +214,10 @@ def on_message(ws, message):
             engine.setProperty('rate', random.randint(80,120))
             engine.say(event["data"]["text"])
         if event["command"] == "stt":
-            print("converting sdpeech to text")
+            print("converting speech to text")
             inputtext = transcribe_wav(event["data"])
             sendStatus(ws, "sttdone", inputtext)
+            engine.say()
             engine.say(inputtext)
             engine.runAndWait()
             
