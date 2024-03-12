@@ -3,8 +3,8 @@ Description=DDD Phone Unit
  
 [Service]
 Type=forking
-ExecStart=/usr/bin/bash --login /home/pi/DataDrivenDreams/python/pyPhonebooth/phone1.sh
-WorkingDirectory=/home/pi/DataDrivenDreams/python/pyPhonebooth/
+ExecStart=/usr/bin/bash --login /home/pi/DataDrivenDreams/python/pyPhoneBooth/phone1.sh
+WorkingDirectory=/home/pi/DataDrivenDreams/python/pyPhoneBooth/
 StandardOutput=inherit
 StandardError=inherit
 Restart=on-failure
