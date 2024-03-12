@@ -24,6 +24,8 @@ assert numpy  # avoid "imported but unused" message (W0611)
 from pydub import AudioSegment, effects
 from config import mainserver
 import subprocess
+import whisper
+import time
 
 # Define a function to speak a long sentence in the background:
 
@@ -37,15 +39,33 @@ server = sys.argv[2]
 options = sys.argv[3]
 
 
-# engine = pyttsx4.init()
-# engine.say("Hi, "+ sys.argv[1]  + "activated")
-# engine.runAndWait()
+
 
 def say(text, voice, pitch):
     #-v "english_rp+f2", "en-scottish"
     #-p (pitch 0-99, 50 default)
     #-s <integer>  Speed in approximate words per minute. The default is 175
     subprocess.Popen(['espeak-ng', "-p", "80" , "-v", voice , text])
+
+
+
+def sendStatus(ws, status, data):
+    status  = {
+        "type": "status",
+        "status": status,
+        "data" : data,
+        "src": name
+    }
+    ws.send(json.dumps(status))
+
+
+def transcribe_wav(wav_file):
+    model = whisper.load_model("tiny.en")#"base")
+    now = time.time()
+    result = model.transcribe(wav_file)
+    print(result["text"])
+    print("calculation took :", time.time() - now , "sec" )
+    return result["text"]
 
 say("Hi, "+ sys.argv[1]  + "activated")
 
@@ -123,30 +143,22 @@ class AudioRecorder:
                 self.stop_recording()
 
     def start_recording(self):
-        self.recording = True
-        print("Recording started")
+        sendStatus(ws, "hook", "off")
+        print("Phone off Hook")
+        say("please speak your dream loud and clear after this message. Ready? 3 2 1 Go!")
+        print("starting recording")
+        sendStatus(ws, "recording", True)
         # Start recording in a separate thread
+        self.recording = True
         threading.Thread(target=self.record_audio).start()
-        status  = {
-            "type": "status",
-            "status": "hook",
-            "data" : "off",
-            "src": name
-        }
-        ws.send(json.dumps(status))
 
 
     def stop_recording(self):
         self.recording = False
         print("Recording stopped")
+        sendStatus(ws, "recording", False)
         self.gpio.switch_led(to_green=False)
-        status  = {
-            "type": "status",
-            "status": "hook",
-            "data" : "on",
-            "src": name
-        }
-        ws.send(json.dumps(status))
+        sendStatus(ws, "hook", "on")
 
     def record_audio(self):
         # Generate filename with timestamp
@@ -178,18 +190,10 @@ class AudioRecorder:
             print("PA error {}".format(e))
             # try again, miserable portaudio library
             self.record_audio()
-
         self.latest_recording = file_name
-        status  = {
-            "type": "status",
-            "status": "recording_done",
-            "data" : file_name,
-            "src": name
-        }
-        ws.send(json.dumps(status))
-
+        sendStatus(ws, "recording", False)
+        sendStatus(ws, "recording_done", file_name)
         
-
 
     def play_audio(self, audio_file):
         try:
@@ -202,12 +206,9 @@ class AudioRecorder:
             self.play_audio(audio_file)
 
 
-
-
-
 def on_message(ws, message):
     event = json.loads(message)
-    # print(event["data"]["text"])
+    print(event)
     if event["type"] == "command" and event["dest"] == name:
         # print(event["text"]) 
         if event["command"] == "say":

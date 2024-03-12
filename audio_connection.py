@@ -13,6 +13,8 @@ import numpy  # Make sure NumPy is loaded before it is used in the callback
 
 assert numpy  # avoid "imported but unused" message (W0611)
 from pydub import AudioSegment, effects
+import websocket
+import pyttsx4
 
 
 class AudioRecorder:
@@ -124,7 +126,8 @@ class AudioRecorder:
             # normalize the audio
             raw_sound = AudioSegment.from_file(file_name, "wav")
             normalized_sound = effects.normalize(raw_sound)
-            normalized_sound.export(file_name, format="wav")
+            normalized_sound.export("{}".format(file_name), format="wav")
+            # normalized_sound.export(file_name, format="wav")
         except sd.PortAudioError as e:
             print("PA error {}".format(e))
             # try again, miserable portaudio library
@@ -135,6 +138,7 @@ class AudioRecorder:
         # play audio after recording
         # TODO KASPER, remove this if you want to hook up espeak
         self.play_audio(self.latest_recording)
+        #first send audio to whisper
 
     def play_audio(self, audio_file):
         try:

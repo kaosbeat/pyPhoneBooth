@@ -86,3 +86,46 @@ Now its working.
 
 makke sure epseak-ng is installed
 currently using subprocess/Popen to execute espeak
+
+## install
+
+## install as service
+1. make a copy of the shell script phone.sh and name it phoneX.sh where X is the samne as the hostname index (ddd-phone1 > phone1.sh)
+2. edit the new scriipt and adapt index
+3. cp ddd-phone.service to /etc/systemd/sytem
+`sudo cp ddd-phone.service /etc/systemd/system/ddd-phone.service`
+4. edit the service file
+`sudo vi /etc/systemd/system/ddd-phone.service`
+5. enable the service 
+`sudo systemctl enable ddd-phone`
+`sudo systemctl daemon-reload`
+
+
+
+## double check the sound card
+(if it works from the login shell, this does not mean it will work from systemd)
+https://forums.raspberrypi.com/viewtopic.php?t=278665 
+https://forums.raspberrypi.com/viewto/questions/120034/python-script-not-playing-audio-when-run-through-systemd
+ddd-speaker.service requires /etc/asound.conf
+
+
+The solution presented worked for me to get sound while running a python program from system.
+
+What one has to do is to add defaults to the asound.conf file at /etc/asound.conf. I did sudo nano on file and found nothing in it, so I added
+
+   `defaults.pcm.card 2`
+
+Why "2"? It's the number given when one does
+
+```
+
+pi@ddd-display1:~/ $ cat /proc/asound/cards
+
+ 0 [vc4hdmi0       ]: vc4-hdmi - vc4-hdmi-0
+                      vc4-hdmi-0
+ 1 [vc4hdmi1       ]: vc4-hdmi - vc4-hdmi-1
+                      vc4-hdmi-1
+ 2 [Headphones     ]: bcm2835_headpho - bcm2835 Headphones
+                      bcm2835 Headphones
+                      
+```
