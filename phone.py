@@ -71,13 +71,13 @@ def sendStatus(ws, status, data):
     ws.send(json.dumps(status))
 
 def sendCommand(ws, command, data):
-    status  = {
+    command  = {
         "type": "command",
         "command": command,
         "data" : data,
         "src": name
     }
-    ws.send(json.dumps(status))
+    ws.send(json.dumps(command))
 
 
 
@@ -94,6 +94,7 @@ def transcribe_wav(wav_file):
 
 
 class AudioRecorder:
+    global phonehookstate
     def __init__(self, rpi_execution: bool = False):
         self.recording = None
         self.rpi = False
@@ -172,23 +173,28 @@ class AudioRecorder:
         print("Phone off Hook")
         self.p = say("please speak your dream loud and clear after this message. Ready?" )  # 3 2 1 Go!")
         self.p.wait()
-        sendCommand(ws, "showbig", {"text":"3", "textstate": "alert"})
-        self.p = say("3")
-        self.p.wait()
-        sendCommand(ws, "showbig", {"text":"2", "textstate": "alert"})
-        self.p = say("2")
-        self.p.wait()
-        sendCommand(ws, "showbig", {"text":"1", "textstate": "alert"})
-        self.p = say("1")
-        self.p.wait()
-        sendCommand(ws, "showbig", {"text":"REC", "textstate": "alert"})
-        self.p = say("GO!")
-        self.p.wait()
-        print("starting recording")
-        sendStatus(ws, "recording", True)
-        # Start recording in a separate thread
-        self.recording = True
-        threading.Thread(target=self.record_audio).start()
+        if not phonehookstate:
+            sendCommand(ws, "showbig", {"text":"3", "textstate": "alert"})
+            self.p = say("3")
+            self.p.wait()
+        if not phonehookstate:
+            sendCommand(ws, "showbig", {"text":"2", "textstate": "alert"})
+            self.p = say("2")
+            self.p.wait()
+        if not phonehookstate:
+            sendCommand(ws, "showbig", {"text":"1", "textstate": "alert"})
+            self.p = say("1")
+            self.p.wait()
+        if not phonehookstate:
+            sendCommand(ws, "showbig", {"text":"REC", "textstate": "alert"})
+            self.p = say("GO!")
+            self.p.wait()
+        if not phonehookstate:
+            print("starting recording")
+            sendStatus(ws, "recording", True)
+            # Start recording in a separate thread
+            self.recording = True
+            threading.Thread(target=self.record_audio).start()
 
 
 
@@ -224,7 +230,7 @@ class AudioRecorder:
                         file.write(self.q.get())
                     sendCommand(ws, "showbig", {"text":"REC STOPPED", "textstate": "busy"})
                     sendCommand(ws, "show", {"text":"converting to text", "textstate": "busy"})
-                    sendCommand(ws, "showbig", {"text":"place phone ", "textstate": "busy"})
+                    
 
             # normalize the audio
             raw_sound = AudioSegment.from_file(file_name, "wav")
@@ -251,6 +257,7 @@ class AudioRecorder:
 
 
 def on_message(ws, message):
+    global phonehookstate
     event = json.loads(message)
     print(event)
     if event["type"] == "command" and event["dest"] == name:
@@ -267,8 +274,12 @@ def on_message(ws, message):
             inputtext = transcribe_wav(event["data"])
             sendStatus(ws, "sttdone", inputtext)
             say(inputtext)
-
-
+    if event["type"] == "status" and event["dest"] == name:
+        if event["status"] == "hook":
+            if event["data"] == "off":
+                phonehookstate = False # False is off hook
+            if event["data"] == "on":
+                phonehookstate = True # False is off hook
 def on_error(ws, error):
     print(error)
 
