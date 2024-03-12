@@ -58,6 +58,7 @@ def say(text, voice="en-gb-scotland+f2", pitch=50):
 #  5  en-us-nyc       --/M      English_(America,_New_York_City) gmw/en-US-nyc  
 
 ## add +f2 for female voice
+say("Hi, "+ sys.argv[1]  + "activated")
 
 def sendStatus(ws, status, data):
     status  = {
@@ -77,7 +78,7 @@ def transcribe_wav(wav_file):
     print("calculation took :", time.time() - now , "sec" )
     return result["text"]
 
-say("Hi, "+ sys.argv[1]  + "activated")
+
 
 class AudioRecorder:
     def __init__(self, rpi_execution: bool = False):
@@ -228,6 +229,12 @@ def on_message(ws, message):
                 voice = "en-029"
             # engine.setProperty('rate', random.randint(80,120))
             say(event["data"]["text"],voice, 90 )
+        if event["command"] == "stt":
+            print("converting speech to text")
+            inputtext = transcribe_wav(event["data"])
+            sendStatus(ws, "sttdone", inputtext)
+            say(inputtext)
+
 
 def on_error(ws, error):
     print(error)
