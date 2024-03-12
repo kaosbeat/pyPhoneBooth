@@ -5,7 +5,7 @@ import _thread
 import time
 import rel
 import json
-import pyttsx4
+# import pyttsx4
 import time
 import random
 import queue
@@ -23,7 +23,7 @@ import numpy  # Make sure NumPy is loaded before it is used in the callback
 assert numpy  # avoid "imported but unused" message (W0611)
 from pydub import AudioSegment, effects
 from config import mainserver
-
+import subprocess
 
 # Define a function to speak a long sentence in the background:
 
@@ -37,14 +37,17 @@ server = sys.argv[2]
 options = sys.argv[3]
 
 
-engine = pyttsx4.init()
-engine.say("Hi, "+ sys.argv[1]  + "activated")
-engine.runAndWait()
+# engine = pyttsx4.init()
+# engine.say("Hi, "+ sys.argv[1]  + "activated")
+# engine.runAndWait()
 
+def say(text, voice, pitch):
+    #-v "english_rp+f2", "en-scottish"
+    #-p (pitch 0-99, 50 default)
+    #-s <integer>  Speed in approximate words per minute. The default is 175
+    subprocess.Popen(['espeak-ng', "-p", "80" , "-v", voice , text])
 
-
-
-
+say("Hi, "+ sys.argv[1]  + "activated")
 
 class AudioRecorder:
     def __init__(self, rpi_execution: bool = False):
@@ -209,18 +212,18 @@ def on_message(ws, message):
         # print(event["text"]) 
         if event["command"] == "say":
             if event["data"]["style"] == "female":
-               engine.setProperty('voice', "english_rp+f2")
+                voice = "english_rp+f2"
             if event["data"]["style"] == "male":
-                engine.setProperty('voice', "en-scottish")
-            engine.setProperty('rate', random.randint(80,120))
-            engine.say(event["data"]["text"])
+                voice = "en-scottish"
+            # engine.setProperty('rate', random.randint(80,120))
+            say(event["data"]["text"],voice, 90 )
 
 def on_error(ws, error):
     print(error)
 
 def on_close(ws, close_status_code, close_msg):
     print("### closed ###")
-    engine.say("speaker "+ name  + "disconnected ")
+    say("speaker "+ name  + "disconnected ")
 
 
 def on_open(ws):
@@ -232,7 +235,7 @@ def on_open(ws):
             "src": name
         }
     ws.send(json.dumps(initstatus))
-    engine.say("speaker: "+ name + ", connected to " + mainserver)
+    say("speaker: "+ name + ", connected to " + mainserver)
 
 
 if __name__ == "__main__":

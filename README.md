@@ -60,3 +60,29 @@ I've changed the phone button from GPIO 17 to GND, with internal pullup. This wa
 Even with this adaption, I get some bad readings. 
 
 **TODO** photo from internal connections of the phone & the IQAUDIO board **TODO**
+
+
+
+# I had some troubles creatingthe correct virtualenv
+https://github.com/waveform80/rpi-lgpio/issues/3
+
+this fixed it:
+
+I also ran into problems building by downloading from http://abyz.me.uk/lg/download.html
+
+Turned out I had the same issue as gpiozero/gpiozero#1038 (comment), means my system-wide lgpio was Version: 0.2.2.0 and the virtual environment one was lgpio Version: 0.0.0.2.
+
+I copied over following files from /usr/lib/python3/dist-packages/ to /home/pi/OctoPrint/lib/python3.11/site-packages/
+
+    lgpio-0.2.2.0.egg-info
+    lgpio.py
+    _lgpio.cpython-311-aarch64-linux-gnu.so
+
+Now its working.
+
+
+
+## espeak or espeak -ng
+
+makke sure epseak-ng is installed
+currently using subprocess/Popen to execute espeak
