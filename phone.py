@@ -169,27 +169,31 @@ class AudioRecorder:
     def start_recording(self):
         sendStatus(ws, "hook", "off")
         print("Phone off Hook")
-        p = say("please speak your dream loud and clear after this message. Ready?" )  # 3 2 1 Go!")
-        p.wait()
+        self.p = say("please speak your dream loud and clear after this message. Ready?" )  # 3 2 1 Go!")
+        self.p.wait()
         sendCommand(ws, "showbig", {"text":"3", "textstate": "alert"})
-        p = say("3")
-        p.wait()
+        self.p = say("3")
+        self.p.wait()
         sendCommand(ws, "showbig", {"text":"2", "textstate": "alert"})
-        p = say("2")
-        p.wait()
+        self.p = say("2")
+        self.p.wait()
         sendCommand(ws, "showbig", {"text":"1", "textstate": "alert"})
-        p = say("1")
-        p.wait()
+        self.p = say("1")
+        self.p.wait()
+        sendCommand(ws, "showbig", {"text":"REC", "textstate": "alert"})
+        self.p = say("GO!")
+        self.p.wait()
         print("starting recording")
         sendStatus(ws, "recording", True)
         # Start recording in a separate thread
         self.recording = True
         threading.Thread(target=self.record_audio).start()
-        
+
 
 
     def stop_recording(self):
         self.recording = False
+        self.p.kill()
         print("Recording stopped")
         sendStatus(ws, "recording", False)
         self.gpio.switch_led(to_green=False)
@@ -217,6 +221,10 @@ class AudioRecorder:
                     # keep recording until the button is pushed or the timeout has happened
                     while self.recording and time.time() <= timeout:
                         file.write(self.q.get())
+                    sendCommand(ws, "showbig", {"text":"REC STOPPED", "textstate": "busy"})
+                    sendCommand(ws, "show", {"text":"converting to text", "textstate": "busy"})
+                    sendCommand(ws, "showbig", {"text":"place phone ", "textstate": "busy"})
+
             # normalize the audio
             raw_sound = AudioSegment.from_file(file_name, "wav")
             normalized_sound = effects.normalize(raw_sound)
