@@ -45,7 +45,8 @@ def say(text, voice="en-gb-scotland+f2", pitch=50):
     #-v "english_rp+f2", "en-scottish"
     #-p (pitch 0-99, 50 default)
     #-s <integer>  Speed in approximate words per minute. The default is 175
-    subprocess.Popen(['espeak-ng', "-p", "80" , "-v", voice , text])
+    p = subprocess.Popen(['espeak-ng', "-p", "80" , "-v", voice , text])
+    return p
 
 # ESPEAK-NG voices
 # 5  en-029          --/M      English_(Caribbean) gmw/en-029           (en 10)
