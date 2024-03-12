@@ -41,13 +41,23 @@ options = sys.argv[3]
 
 
 
-def say(text, voice="english_rp+f2", pitch=50):
+def say(text, voice="en-gb-scotland+f2", pitch=50):
     #-v "english_rp+f2", "en-scottish"
     #-p (pitch 0-99, 50 default)
     #-s <integer>  Speed in approximate words per minute. The default is 175
     subprocess.Popen(['espeak-ng', "-p", "80" , "-v", voice , text])
 
+# ESPEAK-NG voices
+# 5  en-029          --/M      English_(Caribbean) gmw/en-029           (en 10)
+#  2  en-gb           --/M      English_(Great_Britain) gmw/en               (en 2)
+#  5  en-gb-scotland  --/M      English_(Scotland) gmw/en-GB-scotland   (en 4)
+#  5  en-gb-x-gbclan  --/M      English_(Lancaster) gmw/en-GB-x-gbclan   (en-gb 3)(en 5)
+#  5  en-gb-x-gbcwmd  --/M      English_(West_Midlands) gmw/en-GB-x-gbcwmd   (en-gb 9)(en 9)
+#  5  en-gb-x-rp      --/M      English_(Received_Pronunciation) gmw/en-GB-x-rp       (en-gb 4)(en 5)
+#  2  en-us           --/M      English_(America)  gmw/en-US            (en 3)
+#  5  en-us-nyc       --/M      English_(America,_New_York_City) gmw/en-US-nyc  
 
+## add +f2 for female voice
 
 def sendStatus(ws, status, data):
     status  = {
