@@ -26,8 +26,9 @@ class AudioRecorder:
         self.channels = 1
         self.duration = 5
         if rpi_execution:
-            print("RPI execution")
             rpi_version = raspberrypi_version()
+            print("RPI {} execution".format(rpi_version))
+
             match rpi_version:
                 case 4:
                     from gpio_class_rpigpio import gpio_class
@@ -55,7 +56,7 @@ class AudioRecorder:
         sd.default.blocksize = self.block_size
         sd.default.channels = self.channels
         # sd.default.dtype = 'int24'
-        sd.default.device = 'USB Audio Device'
+        sd.default.device = 'USB Audio Device'#'USB PnP Sound Device'
         self.q = queue.Queue()
 
         # recording files
@@ -127,7 +128,6 @@ class AudioRecorder:
             raw_sound = AudioSegment.from_file(file_name, "wav")
             normalized_sound = effects.normalize(raw_sound)
             normalized_sound.export("{}".format(file_name), format="wav")
-            # normalized_sound.export(file_name, format="wav")
         except sd.PortAudioError as e:
             print("PA error {}".format(e))
             # try again, miserable portaudio library
@@ -152,10 +152,10 @@ class AudioRecorder:
 
 
 if __name__ == "__main__":
-    try:
-        import RPi.GPIO as GPIO
-    except:
-        print("no rpi?")
+    #try:
+    #    import RPi.GPIO as GPIO
+    #except:
+    #    print("no rpi?")
 
     audio_recorder = AudioRecorder(is_raspberrypi())
     # audio_recorder.check_devices()
