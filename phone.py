@@ -169,6 +169,7 @@ class AudioRecorder:
                 self.stop_recording()
 
     def start_recording(self):
+        global phonehookstate
         sendStatus(ws, "hook", "off")
         print("Phone off Hook")
         self.p = say("please speak your dream loud and clear after this message. Ready?" )  # 3 2 1 Go!")
