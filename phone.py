@@ -156,7 +156,8 @@ class AudioRecorder:
     def start_recording(self):
         sendStatus(ws, "hook", "off")
         print("Phone off Hook")
-        say("please speak your dream loud and clear after this message. Ready? 3 2 1 Go!")
+        p = say("please speak your dream loud and clear after this message. Ready? 3 2 1 Go!")
+        p.wait()
         print("starting recording")
         sendStatus(ws, "recording", True)
         # Start recording in a separate thread
