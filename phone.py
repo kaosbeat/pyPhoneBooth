@@ -186,6 +186,7 @@ class AudioRecorder:
         # Start recording in a separate thread
         self.recording = True
         threading.Thread(target=self.record_audio).start()
+        
 
 
     def stop_recording(self):
