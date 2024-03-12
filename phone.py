@@ -26,6 +26,7 @@ from config import mainserver
 import subprocess
 import whisper
 import time
+import lib.displaycommands as dc
 
 # Define a function to speak a long sentence in the background:
 
@@ -40,13 +41,13 @@ options = sys.argv[3]
 
 
 
-
 def say(text, voice="en-gb-scotland+f2", pitch=50):
     #-v "english_rp+f2", "en-scottish"
     #-p (pitch 0-99, 50 default)
     #-s <integer>  Speed in approximate words per minute. The default is 175
     p = subprocess.Popen(['espeak-ng', "-p", "80" , "-v", voice , text])
     return p
+
 
 # ESPEAK-NG voices
 # 5  en-029          --/M      English_(Caribbean) gmw/en-029           (en 10)
@@ -69,6 +70,18 @@ def sendStatus(ws, status, data):
         "src": name
     }
     ws.send(json.dumps(status))
+
+def sendCommand(ws, command, data):
+    status  = {
+        "type": "command",
+        "command": command,
+        "data" : data,
+        "src": name
+    }
+    ws.send(json.dumps(status))
+
+
+
 
 
 def transcribe_wav(wav_file):
@@ -157,7 +170,16 @@ class AudioRecorder:
     def start_recording(self):
         sendStatus(ws, "hook", "off")
         print("Phone off Hook")
-        p = say("please speak your dream loud and clear after this message. Ready? 3 2 1 Go!")
+        p = say("please speak your dream loud and clear after this message. Ready?" )  # 3 2 1 Go!")
+        p.wait()
+        sendCommand(ws, "showbig", {"text":"3", "textstate": "alert"})
+        p = say("3")
+        p.wait()
+        sendCommand(ws, "showbig", {"text":"2", "textstate": "alert"})
+        p = say("2")
+        p.wait()
+        sendCommand(ws, "showbig", {"text":"1", "textstate": "alert"})
+        p = say("1")
         p.wait()
         print("starting recording")
         sendStatus(ws, "recording", True)
