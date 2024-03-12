@@ -101,6 +101,7 @@ class AudioRecorder:
         self.block_size = 1024
         self.channels = 1
         self.duration = 5
+        self.p = say("")
         if rpi_execution:
             print("RPI execution")
             rpi_version = raspberrypi_version()
