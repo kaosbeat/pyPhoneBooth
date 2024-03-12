@@ -223,9 +223,9 @@ def on_message(ws, message):
         # print(event["text"]) 
         if event["command"] == "say":
             if event["data"]["style"] == "female":
-                voice = "english_rp+f2"
+                voice = "en-us-nyc"
             if event["data"]["style"] == "male":
-                voice = "en-scottish"
+                voice = "en-029"
             # engine.setProperty('rate', random.randint(80,120))
             say(event["data"]["text"],voice, 90 )
 
