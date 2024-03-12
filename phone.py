@@ -41,7 +41,7 @@ options = sys.argv[3]
 
 
 
-def say(text, voice, pitch):
+def say(text, voice="english_rp+f2", pitch=50):
     #-v "english_rp+f2", "en-scottish"
     #-p (pitch 0-99, 50 default)
     #-s <integer>  Speed in approximate words per minute. The default is 175
