@@ -26,7 +26,6 @@ from config import mainserver
 import subprocess
 import whisper
 import time
-import lib.displaycommands as dc
 
 # Define a function to speak a long sentence in the background:
 
