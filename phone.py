@@ -174,38 +174,38 @@ class AudioRecorder:
         print("Phone off Hook")
         self.p = say("please speak your dream loud and clear after this message. Ready?" )  # 3 2 1 Go!")
         self.p.wait()
-        if not phonehookstate:
-            sendCommand(ws, "showbig", {"text":"3", "textstate": "alert"})
-            self.p = say("3")
-            self.p.wait()
-        if not phonehookstate:
-            sendCommand(ws, "showbig", {"text":"2", "textstate": "alert"})
-            self.p = say("2")
-            self.p.wait()
-        if not phonehookstate:
-            sendCommand(ws, "showbig", {"text":"1", "textstate": "alert"})
-            self.p = say("1")
-            self.p.wait()
-        if not phonehookstate:
-            sendCommand(ws, "showbig", {"text":"REC", "textstate": "alert"})
-            self.p = say("GO!")
-            self.p.wait()
-        if not phonehookstate:
-            print("starting recording")
-            sendStatus(ws, "recording", True)
-            # Start recording in a separate thread
-            self.recording = True
-            threading.Thread(target=self.record_audio).start()
+        # if not phonehookstate:
+        sendCommand(ws, "showbig", {"text":"3", "textstate": "alert"})
+        self.p = say("3")
+        self.p.wait()
+        # if not phonehookstate:
+        sendCommand(ws, "showbig", {"text":"2", "textstate": "alert"})
+        self.p = say("2")
+        self.p.wait()
+        # if not phonehookstate:
+        sendCommand(ws, "showbig", {"text":"1", "textstate": "alert"})
+        self.p = say("1")
+        self.p.wait()
+        # if not phonehookstate:
+        sendCommand(ws, "showbig", {"text":"REC", "textstate": "alert"})
+        self.p = say("GO!")
+        self.p.wait()
+        # if not phonehookstate:
+        print("starting recording")
+        sendStatus(ws, "recording", True)
+        # Start recording in a separate thread
+        self.recording = True
+        threading.Thread(target=self.record_audio).start()
 
 
 
     def stop_recording(self):
+        sendStatus(ws, "hook", "on")
         self.recording = False
-        self.p.kill()
+        # self.p.kill()
         print("Recording stopped")
         sendStatus(ws, "recording", False)
         self.gpio.switch_led(to_green=False)
-        sendStatus(ws, "hook", "on")
 
     def record_audio(self):
         # Generate filename with timestamp
