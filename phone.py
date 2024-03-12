@@ -41,13 +41,25 @@ options = sys.argv[3]
 
 
 
-def say(text, voice, pitch):
+def say(text, voice="en-gb-scotland+f2", pitch=50):
     #-v "english_rp+f2", "en-scottish"
     #-p (pitch 0-99, 50 default)
     #-s <integer>  Speed in approximate words per minute. The default is 175
-    subprocess.Popen(['espeak-ng', "-p", "80" , "-v", voice , text])
+    p = subprocess.Popen(['espeak-ng', "-p", "80" , "-v", voice , text])
+    return p
 
+# ESPEAK-NG voices
+# 5  en-029          --/M      English_(Caribbean) gmw/en-029           (en 10)
+#  2  en-gb           --/M      English_(Great_Britain) gmw/en               (en 2)
+#  5  en-gb-scotland  --/M      English_(Scotland) gmw/en-GB-scotland   (en 4)
+#  5  en-gb-x-gbclan  --/M      English_(Lancaster) gmw/en-GB-x-gbclan   (en-gb 3)(en 5)
+#  5  en-gb-x-gbcwmd  --/M      English_(West_Midlands) gmw/en-GB-x-gbcwmd   (en-gb 9)(en 9)
+#  5  en-gb-x-rp      --/M      English_(Received_Pronunciation) gmw/en-GB-x-rp       (en-gb 4)(en 5)
+#  2  en-us           --/M      English_(America)  gmw/en-US            (en 3)
+#  5  en-us-nyc       --/M      English_(America,_New_York_City) gmw/en-US-nyc  
 
+## add +f2 for female voice
+say("Hi, "+ sys.argv[1]  + "activated")
 
 def sendStatus(ws, status, data):
     status  = {
@@ -67,7 +79,7 @@ def transcribe_wav(wav_file):
     print("calculation took :", time.time() - now , "sec" )
     return result["text"]
 
-say("Hi, "+ sys.argv[1]  + "activated")
+
 
 class AudioRecorder:
     def __init__(self, rpi_execution: bool = False):
@@ -145,7 +157,8 @@ class AudioRecorder:
     def start_recording(self):
         sendStatus(ws, "hook", "off")
         print("Phone off Hook")
-        say("please speak your dream loud and clear after this message. Ready? 3 2 1 Go!")
+        p = say("please speak your dream loud and clear after this message. Ready? 3 2 1 Go!")
+        p.wait()
         print("starting recording")
         sendStatus(ws, "recording", True)
         # Start recording in a separate thread
@@ -213,11 +226,17 @@ def on_message(ws, message):
         # print(event["text"]) 
         if event["command"] == "say":
             if event["data"]["style"] == "female":
-                voice = "english_rp+f2"
+                voice = "en-us-nyc"
             if event["data"]["style"] == "male":
-                voice = "en-scottish"
+                voice = "en-029"
             # engine.setProperty('rate', random.randint(80,120))
             say(event["data"]["text"],voice, 90 )
+        if event["command"] == "stt":
+            print("converting speech to text")
+            inputtext = transcribe_wav(event["data"])
+            sendStatus(ws, "sttdone", inputtext)
+            say(inputtext)
+
 
 def on_error(ws, error):
     print(error)
