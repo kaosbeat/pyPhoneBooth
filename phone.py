@@ -38,7 +38,7 @@ name = sys.argv[1]
 server = sys.argv[2]
 options = sys.argv[3]
 
-
+phonehookstate = False
 
 def say(text, voice="en-gb-scotland+f2", pitch=50):
     #-v "english_rp+f2", "en-scottish"
