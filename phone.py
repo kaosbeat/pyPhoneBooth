@@ -285,6 +285,7 @@ def on_message(ws, message):
             sendStatus(ws, "sttdone", inputtext)
             say(inputtext)
             status["ready"] = True
+            sendCommand(ws, "inspire", 5 )
 
         if event["command"] == "enableInput":
             print("readsy to accept new input")
