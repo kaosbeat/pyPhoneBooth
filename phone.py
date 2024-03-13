@@ -27,6 +27,13 @@ import subprocess
 import whisper
 import time
 
+
+status = {
+    "ready" : False,
+    "phonehookstate"  : True
+}
+
+
 # Define a function to speak a long sentence in the background:
 
 
@@ -38,7 +45,6 @@ name = sys.argv[1]
 server = sys.argv[2]
 options = sys.argv[3]
 
-phonehookstate = False
 
 def say(text, voice="en-gb-scotland+f2", pitch=50):
     #-v "english_rp+f2", "en-scottish"
@@ -94,7 +100,7 @@ def transcribe_wav(wav_file):
 
 
 class AudioRecorder:
-    global phonehookstate
+    global status
     def __init__(self, rpi_execution: bool = False):
         self.recording = None
         self.rpi = False
@@ -169,38 +175,36 @@ class AudioRecorder:
                 self.stop_recording()
 
     def start_recording(self):
-        global phonehookstate
+        global status
+        status["phonehookstate"] = False
         sendStatus(ws, "hook", "off")
         print("Phone off Hook")
-        self.p = say("please speak your dream loud and clear after this message. Ready?" )  # 3 2 1 Go!")
-        self.p.wait()
-        # if not phonehookstate:
-        sendCommand(ws, "showbig", {"text":"3", "textstate": "alert"})
-        self.p = say("3")
-        self.p.wait()
-        # if not phonehookstate:
-        sendCommand(ws, "showbig", {"text":"2", "textstate": "alert"})
-        self.p = say("2")
-        self.p.wait()
-        # if not phonehookstate:
-        sendCommand(ws, "showbig", {"text":"1", "textstate": "alert"})
-        self.p = say("1")
-        self.p.wait()
-        # if not phonehookstate:
-        sendCommand(ws, "showbig", {"text":"REC", "textstate": "alert"})
-        self.p = say("GO!")
-        self.p.wait()
-        # if not phonehookstate:
-        print("starting recording")
-        sendStatus(ws, "recording", True)
-        # Start recording in a separate thread
-        self.recording = True
-        threading.Thread(target=self.record_audio).start()
+        if status["ready"]:
+            self.p = say("please speak your dream loud and clear after this message. Ready?" )  # 3 2 1 Go!")
+            self.p.wait()
+            sendCommand(ws, "showbig", {"text":"3", "textstate": "alert"})
+            self.p = say("3")
+            self.p.wait()
+            sendCommand(ws, "showbig", {"text":"2", "textstate": "alert"})
+            self.p = say("2")
+            self.p.wait()
+            sendCommand(ws, "showbig", {"text":"1", "textstate": "alert"})
+            self.p = say("1")
+            self.p.wait()
+            sendCommand(ws, "showbig", {"text":"REC", "textstate": "alert"})
+            self.p = say("GO!")
+            self.p.wait()
+            print("starting recording")
+            sendStatus(ws, "recording", True)
+            # Start recording in a separate thread
+            self.recording = True
+            threading.Thread(target=self.record_audio).start()
 
 
 
     def stop_recording(self):
         sendStatus(ws, "hook", "on")
+        status["phonehookstate"] = True
         self.recording = False
         # self.p.kill()
         print("Recording stopped")
@@ -208,6 +212,7 @@ class AudioRecorder:
         self.gpio.switch_led(to_green=False)
 
     def record_audio(self):
+        status["ready"] = False
         # Generate filename with timestamp
         timestamp = time.strftime("%Y%m%d-%H%M%S")
         file_name = os.path.join(os.getcwd(), "recordings", f"output_{timestamp}.wav")
@@ -234,17 +239,21 @@ class AudioRecorder:
                     
 
             # normalize the audio
-            raw_sound = AudioSegment.from_file(file_name, "wav")
-            normalized_sound = effects.normalize(raw_sound)
-            normalized_sound.export(file_name, format="wav")
+            try:
+                raw_sound = AudioSegment.from_file(file_name, "wav")
+                normalized_sound = effects.normalize(raw_sound)
+                normalized_sound.export(file_name, format="wav")
+            except IndexError:
+                status["ready"] = True
         except sd.PortAudioError as e:
             print("PA error {}".format(e))
             # try again, miserable portaudio library
             self.record_audio()
-        self.latest_recording = file_name
-        sendStatus(ws, "recording", False)
-        sendStatus(ws, "recording_done", file_name)
-        
+        if not status["ready"]:
+            self.latest_recording = file_name
+            sendStatus(ws, "recording", False)
+            sendStatus(ws, "recording_done", file_name)
+            
 
     def play_audio(self, audio_file):
         try:
@@ -275,6 +284,13 @@ def on_message(ws, message):
             inputtext = transcribe_wav(event["data"])
             sendStatus(ws, "sttdone", inputtext)
             say(inputtext)
+            status["ready"] = True
+
+        if event["command"] == "enableInput":
+            print("readsy to accept new input")
+            status["ready"] = True
+        if event["command"] == "disableInput":
+            print("not readsy to accept new input")
     if event["type"] == "status" and event["dest"] == name:
         if event["status"] == "hook":
             if event["data"] == "off":
@@ -299,6 +315,7 @@ def on_open(ws):
         }
     ws.send(json.dumps(initstatus))
     say("speaker: "+ name + ", connected to " + mainserver)
+    status["ready"] = True
 
 
 if __name__ == "__main__":
