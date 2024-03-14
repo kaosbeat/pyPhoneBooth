@@ -50,7 +50,7 @@ def say(text, voice="en-gb-scotland+f2", pitch=50):
     #-v "english_rp+f2", "en-scottish"
     #-p (pitch 0-99, 50 default)
     #-s <integer>  Speed in approximate words per minute. The default is 175
-    p = subprocess.Popen(['espeak-ng', "-p", "80" , "-v", voice , text])
+    p = subprocess.Popen(['espeak-ng', "-p", "80" , "-v", voice , "-s", "125", text])
     return p
 
 
@@ -180,13 +180,14 @@ class AudioRecorder:
         sendStatus(ws, "hook", "off")
         print("Phone off Hook")
         if status["ready"]:
-            
+            self.p = say("Hi, Welcome to Data Driven Dreams")
+            self.p.wait()
             sendCommand(ws, "show", {"text":"You have ten seconds to describe your dream in one sentence. Ready?", "textstate": "busy"})
             self.p = say("You have ten seconds to describe your dream in one sentence. Ready?" )  # 3 2 1 Go!")
             self.p.wait()
             sendCommand(ws, "show", {"text":"here is some inspiration", "textstate": "busy"})
             sendCommand(ws, "inspire", 3 )
-            sendCommand(ws, "show", {"text":"Keep it short, and please speak english. One sentence", "textstate": "busy"})
+            sendCommand(ws, "show", {"text":"Keep it short, and please speak English. One sentence", "textstate": "busy"})
             self.p = say("Keep it short, and please speak english. One sentence... Ready?" )  
             sendCommand(ws, "showbig", {"text":"READY?", "textstate": "busy"})
             self.p.wait()
@@ -291,7 +292,7 @@ def on_message(ws, message):
             print("converting speech to text")
             inputtext = transcribe_wav(event["data"])
             sendStatus(ws, "sttdone", inputtext)
-            p.say(inputtext)
+            p = say(inputtext)
             p.wait()
             sendCommand(ws, "show", {"text":"follow your dreams, go see the installation", "textstate": "busy"})
             p = say("please hang up the phone, bye" )  # 3 2 1 Go!")
