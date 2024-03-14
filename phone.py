@@ -180,6 +180,8 @@ class AudioRecorder:
         sendStatus(ws, "hook", "off")
         print("Phone off Hook")
         if status["ready"]:
+            self.p = say("   ")
+            self.p.wait()
             self.p = say("Hi, Welcome to Data Driven Dreams")
             self.p.wait()
             sendCommand(ws, "show", {"text":"You have ten seconds to describe your dream in one sentence. Ready?", "textstate": "busy"})
