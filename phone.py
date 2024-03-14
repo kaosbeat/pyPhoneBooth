@@ -46,11 +46,11 @@ server = sys.argv[2]
 options = sys.argv[3]
 
 
-def say(text, voice="en-gb-scotland+f2", pitch=50):
+def say(text, voice="en-gb-scotland+f2", pitch=80, speed=125):
     #-v "english_rp+f2", "en-scottish"
     #-p (pitch 0-99, 50 default)
     #-s <integer>  Speed in approximate words per minute. The default is 175
-    p = subprocess.Popen(['espeak-ng', "-p", "80" , "-v", voice , "-s", "125", text])
+    p = subprocess.Popen(['espeak-ng', "-p", pitch , "-v", voice , "-s", speed, text])
     return p
 
 
@@ -297,8 +297,22 @@ def on_message(ws, message):
             p = say(inputtext)
             p.wait()
             sendCommand(ws, "show", {"text":"follow your dreams, go see the installation", "textstate": "busy"})
-            p = say("please hang up the phone, bye" )  # 3 2 1 Go!")
+            p = say("please hang up the phone,   bye" , voice="en-gb", speed=110)  # 3 2 1 Go!")
             p.wait()
+            sendCommand(ws, "show", {"text":"_"*40, "textstate": "info"})
+            sendCommand(ws, "show", {"text":"Dear Visitor,", "textstate": "info"})
+            sendCommand(ws, "show", {"text":"Welcome", "textstate": "boldinfo", "linefeed":False})
+            sendCommand(ws, "show", {"text":"Data Driven Dreams", "textstate": "boldinfo"})
+            sendCommand(ws, "show", {"text":"Here you can have an AI agent help you dive into your dreams", "textstate": "info"})
+            sendCommand(ws, "show", {"text":"The Agent will help you as soon as you pick up the phone", "textstate": "info"})
+            sendCommand(ws, "show", {"text":"Before you do, think of what you will say. You have 10 seconds", "textstate": "info"})
+            sendCommand(ws, "show", {"text":"How would you tell your dream, in ", "textstate": "info"})
+            sendCommand(ws, "show", {"text":"one sentence...", "textstate": "boldinfo"})
+            sendCommand(ws, "show", {"text":"after that, you can see it being processed by the AI in the", "textstate": "info"})
+            sendCommand(ws, "show", {"text":"Processing Tower", "textstate": "boldinfo"})
+
+            sendCommand(ws, "show", {"text":"Now, Pick up...dream and explore it in this room", "textstate": "info"})
+
             status["ready"] = True
             
 
