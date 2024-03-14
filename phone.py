@@ -180,7 +180,15 @@ class AudioRecorder:
         sendStatus(ws, "hook", "off")
         print("Phone off Hook")
         if status["ready"]:
-            self.p = say("please speak your dream loud and clear after this message. Ready?" )  # 3 2 1 Go!")
+            
+            sendCommand(ws, "show", {"text":"You have ten seconds to describe your dream in one sentence. Ready?", "textstate": "busy"})
+            self.p = say("You have ten seconds to describe your dream in one sentence. Ready?" )  # 3 2 1 Go!")
+            self.p.wait()
+            sendCommand(ws, "show", {"text":"here is some inspiration", "textstate": "busy"})
+            sendCommand(ws, "inspire", 3 )
+            sendCommand(ws, "show", {"text":"Keep it short, and please speak english. One sentence", "textstate": "busy"})
+            self.p = say("Keep it short, and please speak english. One sentence... Ready?" )  
+            sendCommand(ws, "showbig", {"text":"READY?", "textstate": "busy"})
             self.p.wait()
             sendCommand(ws, "showbig", {"text":"3", "textstate": "alert"})
             self.p = say("3")
@@ -234,7 +242,7 @@ class AudioRecorder:
                     # keep recording until the button is pushed or the timeout has happened
                     while self.recording and time.time() <= timeout:
                         file.write(self.q.get())
-                    sendCommand(ws, "showbig", {"text":"REC STOPPED", "textstate": "busy"})
+                    sendCommand(ws, "showbig", {"text":"REC Done", "textstate": "busy"})
                     sendCommand(ws, "show", {"text":"converting to text", "textstate": "busy"})
                     
 
@@ -283,9 +291,13 @@ def on_message(ws, message):
             print("converting speech to text")
             inputtext = transcribe_wav(event["data"])
             sendStatus(ws, "sttdone", inputtext)
-            say(inputtext)
+            p.say(inputtext)
+            p.wait()
+            sendCommand(ws, "show", {"text":"follow your dreams, go see the installation", "textstate": "busy"})
+            p = say("please hang up the phone, bye" )  # 3 2 1 Go!")
+            p.wait()
             status["ready"] = True
-            sendCommand(ws, "inspire", 5 )
+            
 
         if event["command"] == "enableInput":
             print("readsy to accept new input")
