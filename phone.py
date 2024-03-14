@@ -27,6 +27,13 @@ import subprocess
 import whisper
 import time
 
+
+status = {
+    "ready" : False,
+    "phonehookstate"  : True
+}
+
+
 # Define a function to speak a long sentence in the background:
 
 
@@ -39,13 +46,13 @@ server = sys.argv[2]
 options = sys.argv[3]
 
 
-
-
 def say(text, voice="en-gb-scotland+f2", pitch=50):
     #-v "english_rp+f2", "en-scottish"
     #-p (pitch 0-99, 50 default)
     #-s <integer>  Speed in approximate words per minute. The default is 175
-    subprocess.Popen(['espeak-ng', "-p", "80" , "-v", voice , text])
+    p = subprocess.Popen(['espeak-ng', "-p", "80" , "-v", voice , text])
+    return p
+
 
 # ESPEAK-NG voices
 # 5  en-029          --/M      English_(Caribbean) gmw/en-029           (en 10)
@@ -69,6 +76,18 @@ def sendStatus(ws, status, data):
     }
     ws.send(json.dumps(status))
 
+def sendCommand(ws, command, data):
+    command  = {
+        "type": "command",
+        "command": command,
+        "data" : data,
+        "src": name
+    }
+    ws.send(json.dumps(command))
+
+
+
+
 
 def transcribe_wav(wav_file):
     model = whisper.load_model("tiny.en")#"base")
@@ -81,6 +100,7 @@ def transcribe_wav(wav_file):
 
 
 class AudioRecorder:
+    global status
     def __init__(self, rpi_execution: bool = False):
         self.recording = None
         self.rpi = False
@@ -88,6 +108,7 @@ class AudioRecorder:
         self.block_size = 1024
         self.channels = 1
         self.duration = 5
+        self.p = say("")
         if rpi_execution:
             print("RPI execution")
             rpi_version = raspberrypi_version()
@@ -154,24 +175,44 @@ class AudioRecorder:
                 self.stop_recording()
 
     def start_recording(self):
+        global status
+        status["phonehookstate"] = False
         sendStatus(ws, "hook", "off")
         print("Phone off Hook")
-        say("please speak your dream loud and clear after this message. Ready? 3 2 1 Go!")
-        print("starting recording")
-        sendStatus(ws, "recording", True)
-        # Start recording in a separate thread
-        self.recording = True
-        threading.Thread(target=self.record_audio).start()
+        if status["ready"]:
+            self.p = say("please speak your dream loud and clear after this message. Ready?" )  # 3 2 1 Go!")
+            self.p.wait()
+            sendCommand(ws, "showbig", {"text":"3", "textstate": "alert"})
+            self.p = say("3")
+            self.p.wait()
+            sendCommand(ws, "showbig", {"text":"2", "textstate": "alert"})
+            self.p = say("2")
+            self.p.wait()
+            sendCommand(ws, "showbig", {"text":"1", "textstate": "alert"})
+            self.p = say("1")
+            self.p.wait()
+            sendCommand(ws, "showbig", {"text":"REC", "textstate": "alert"})
+            self.p = say("GO!")
+            self.p.wait()
+            print("starting recording")
+            sendStatus(ws, "recording", True)
+            # Start recording in a separate thread
+            self.recording = True
+            threading.Thread(target=self.record_audio).start()
+
 
 
     def stop_recording(self):
+        sendStatus(ws, "hook", "on")
+        status["phonehookstate"] = True
         self.recording = False
+        # self.p.kill()
         print("Recording stopped")
         sendStatus(ws, "recording", False)
         self.gpio.switch_led(to_green=False)
-        sendStatus(ws, "hook", "on")
 
     def record_audio(self):
+        status["ready"] = False
         # Generate filename with timestamp
         timestamp = time.strftime("%Y%m%d-%H%M%S")
         file_name = os.path.join(os.getcwd(), "recordings", f"output_{timestamp}.wav")
@@ -193,18 +234,26 @@ class AudioRecorder:
                     # keep recording until the button is pushed or the timeout has happened
                     while self.recording and time.time() <= timeout:
                         file.write(self.q.get())
+                    sendCommand(ws, "showbig", {"text":"REC STOPPED", "textstate": "busy"})
+                    sendCommand(ws, "show", {"text":"converting to text", "textstate": "busy"})
+                    
+
             # normalize the audio
-            raw_sound = AudioSegment.from_file(file_name, "wav")
-            normalized_sound = effects.normalize(raw_sound)
-            normalized_sound.export(file_name, format="wav")
+            try:
+                raw_sound = AudioSegment.from_file(file_name, "wav")
+                normalized_sound = effects.normalize(raw_sound)
+                normalized_sound.export(file_name, format="wav")
+            except IndexError:
+                status["ready"] = True
         except sd.PortAudioError as e:
             print("PA error {}".format(e))
             # try again, miserable portaudio library
             self.record_audio()
-        self.latest_recording = file_name
-        sendStatus(ws, "recording", False)
-        sendStatus(ws, "recording_done", file_name)
-        
+        if not status["ready"]:
+            self.latest_recording = file_name
+            sendStatus(ws, "recording", False)
+            sendStatus(ws, "recording_done", file_name)
+            
 
     def play_audio(self, audio_file):
         try:
@@ -218,6 +267,7 @@ class AudioRecorder:
 
 
 def on_message(ws, message):
+    global phonehookstate
     event = json.loads(message)
     print(event)
     if event["type"] == "command" and event["dest"] == name:
@@ -234,8 +284,20 @@ def on_message(ws, message):
             inputtext = transcribe_wav(event["data"])
             sendStatus(ws, "sttdone", inputtext)
             say(inputtext)
+            status["ready"] = True
+            sendCommand(ws, "inspire", 5 )
 
-
+        if event["command"] == "enableInput":
+            print("readsy to accept new input")
+            status["ready"] = True
+        if event["command"] == "disableInput":
+            print("not readsy to accept new input")
+    if event["type"] == "status" and event["dest"] == name:
+        if event["status"] == "hook":
+            if event["data"] == "off":
+                phonehookstate = False # False is off hook
+            if event["data"] == "on":
+                phonehookstate = True # False is off hook
 def on_error(ws, error):
     print(error)
 
@@ -254,6 +316,7 @@ def on_open(ws):
         }
     ws.send(json.dumps(initstatus))
     say("speaker: "+ name + ", connected to " + mainserver)
+    status["ready"] = True
 
 
 if __name__ == "__main__":
