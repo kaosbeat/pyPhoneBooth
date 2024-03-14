@@ -107,7 +107,7 @@ class AudioRecorder:
         self.samplerate = 44100
         self.block_size = 1024
         self.channels = 1
-        self.duration = 5
+        self.duration = 10
         self.p = say("")
         if rpi_execution:
             print("RPI execution")
