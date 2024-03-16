@@ -305,7 +305,7 @@ def on_message(ws, message):
             sendCommand(ws, "show", {"text":"Here an AI agent dives into your dreams", "textstate": "info"})
             sendCommand(ws, "show", {"text":"The Agent will help you as soon as you ", "textstate": "info"})
             sendCommand(ws, "show", {"text":"pick up the phone", "textstate": "boldinfo"})
-            sendCommand(ws, "show", {"text":"Before you do, think of what you will say. You have 10 seconds", "textstate": "info"})
+            sendCommand(ws, "show", {"text":"Before you do, think of what you will say.", "textstate": "info"})
             sendCommand(ws, "show", {"text":"You only have 10 seconds", "textstate": "boldinfo"})
             sendCommand(ws, "show", {"text":"How would you tell your dream, in one sentence...", "textstate": "info"})
             sendCommand(ws, "show", {"text":"your dream will be processed by the AI in the", "textstate": "info"})
