@@ -300,18 +300,17 @@ def on_message(ws, message):
             p = say("please hang up the phone,   bye" , voice="en-gb", speed=110)  # 3 2 1 Go!")
             p.wait()
             sendCommand(ws, "show", {"text":"_"*40, "textstate": "info"})
-            sendCommand(ws, "show", {"text":"Dear Visitor,", "textstate": "info"})
-            sendCommand(ws, "show", {"text":"Welcome", "textstate": "boldinfo", "linefeed":False})
-            sendCommand(ws, "show", {"text":"Data Driven Dreams", "textstate": "boldinfo"})
-            sendCommand(ws, "show", {"text":"Here you can have an AI agent help you dive into your dreams", "textstate": "info"})
-            sendCommand(ws, "show", {"text":"The Agent will help you as soon as you pick up the phone", "textstate": "info"})
+            sendCommand(ws, "show", {"text":"Welcome Dear Visitor,", "textstate": "info"})
+            sendCommand(ws, "show", {"text":"this is Data Driven Dreams", "textstate": "boldinfo"})
+            sendCommand(ws, "show", {"text":"Here an AI agent dives into your dreams", "textstate": "info"})
+            sendCommand(ws, "show", {"text":"The Agent will help you as soon as you ", "textstate": "info"})
+            sendCommand(ws, "show", {"text":"pick up the phone", "textstate": "boldinfo"})
             sendCommand(ws, "show", {"text":"Before you do, think of what you will say. You have 10 seconds", "textstate": "info"})
-            sendCommand(ws, "show", {"text":"How would you tell your dream, in ", "textstate": "info"})
-            sendCommand(ws, "show", {"text":"one sentence...", "textstate": "boldinfo"})
-            sendCommand(ws, "show", {"text":"after that, you can see it being processed by the AI in the", "textstate": "info"})
+            sendCommand(ws, "show", {"text":"You only have 10 seconds", "textstate": "boldinfo"})
+            sendCommand(ws, "show", {"text":"How would you tell your dream, in one sentence...", "textstate": "info"})
+            sendCommand(ws, "show", {"text":"your dream will be processed by the AI in the", "textstate": "info"})
             sendCommand(ws, "show", {"text":"Processing Tower", "textstate": "boldinfo"})
-
-            sendCommand(ws, "show", {"text":"Now, Pick up...dream and explore it in this room", "textstate": "info"})
+            sendCommand(ws, "show", {"text":"Pick up, ..., dream and explore it in this room", "textstate": "info"})
 
             status["ready"] = True
             
