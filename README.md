@@ -59,6 +59,9 @@ I've changed the phone button from GPIO 17 to GND, with internal pullup. This wa
 
 Even with this adaption, I get some bad readings. 
 
+![image](https://github.com/kaosbeat/pyPhoneBooth/assets/204628/2f27b45a-b532-4759-9225-5f1f8351c6da)
+
+
 **TODO** photo from internal connections of the phone & the IQAUDIO board **TODO**
 
 
